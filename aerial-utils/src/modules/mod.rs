@@ -1,7 +1,5 @@
-mod greet;
-mod leave;
 mod module;
+mod music;
 
-pub use greet::*;
-pub use leave::*;
 pub use module::*;
+pub use music::*;

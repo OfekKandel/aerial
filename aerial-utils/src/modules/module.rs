@@ -1,5 +1,8 @@
-pub trait Module {
-    type Args: clap::Args;
+use std::fmt::Display;
 
-    fn run_with_params(args: &Self::Args);
+pub trait Module: Display {
+    type Args: clap::Args;
+    type Error: std::error::Error;
+
+    fn run_with_args(args: &Self::Args) -> Result<(), Self::Error>;
 }
