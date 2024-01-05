@@ -31,8 +31,8 @@ pub trait ValidateResponseExt {
 impl ValidateResponseExt for Result<Response, reqwest::Error> {
     fn validate(self) -> Result<Response, ResponseValidationError> {
         match self {
-            Ok(response) => match response.status() {
-                reqwest::StatusCode::OK => Ok(response),
+            Ok(response) => match response.status().as_u16() {
+                200..=299 => Ok(response),
                 _ => Err(ResponseValidationError::BadStatusCode(
                     response.status(),
                     response.text().unwrap_or("No body returned".to_string()),

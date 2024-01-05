@@ -1,4 +1,7 @@
-use super::{spotify_client::SpotifyClient, MusicClient};
+use super::{
+    spotify_client::{InitialAuthError, SpotifyClient},
+    MusicClient,
+};
 use crate::{modules::Module, utils::http::ResponseError};
 use clap::{Args, Subcommand};
 use std::fmt::Display;
@@ -19,7 +22,9 @@ pub enum MusicCommands {
 #[derive(Error, Debug)]
 pub enum MusicError {
     #[error("Failed to retrieve token for API requests: {0}")]
-    FailedTokenCreation(ResponseError),
+    FailedInitialAuth(InitialAuthError),
+    #[error("API request failed: {0}")]
+    FailedRequest(ResponseError),
 }
 
 pub struct Music {}
@@ -29,9 +34,9 @@ impl Module for Music {
     type Error = MusicError;
 
     fn run_with_args(args: &Self::Args) -> Result<(), Self::Error> {
-        let client = SpotifyClient::new().map_err(MusicError::FailedTokenCreation)?;
+        let client = SpotifyClient::new().map_err(MusicError::FailedInitialAuth)?;
         match args.command {
-            MusicCommands::Play => Ok(client.play()),
+            MusicCommands::Play => client.play().map_err(MusicError::FailedRequest),
         }
     }
 }
