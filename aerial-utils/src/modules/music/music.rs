@@ -2,7 +2,7 @@ use super::{
     spotify_client::{SpotifyClient, SpotifyError},
     InitialAuthError, MusicClient,
 };
-use crate::modules::Module;
+use crate::{modules::Module, utils::Config};
 use clap::{Args, Subcommand};
 use std::fmt::Display;
 use thiserror::Error;
@@ -21,6 +21,8 @@ pub enum MusicCommands {
 
 #[derive(Error, Debug)]
 pub enum MusicError {
+    #[error("No configuration for Spotify found in the config file")]
+    MissingConfig,
     #[error("Failed to retrieve token for API requests: {0}")]
     FailedInitialAuth(InitialAuthError),
     #[error("Failed to perform action: {0}")]
@@ -33,8 +35,9 @@ impl Module for Music {
     type Args = MusicArgs;
     type Error = MusicError;
 
-    fn run_with_args(args: &Self::Args) -> Result<(), Self::Error> {
-        let client = SpotifyClient::new().map_err(MusicError::FailedInitialAuth)?;
+    fn run(args: &Self::Args, config: Config) -> Result<(), Self::Error> {
+        let spotify_config = config.modules.spotify.ok_or(MusicError::MissingConfig)?;
+        let client = SpotifyClient::new(spotify_config).map_err(MusicError::FailedInitialAuth)?;
         match args.command {
             MusicCommands::Pause => client.pause(),
         }

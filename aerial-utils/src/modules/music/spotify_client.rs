@@ -6,15 +6,16 @@ use super::MusicClient;
 use crate::modules::music::spotify_auth::InitialAuthError;
 use crate::utils::http::ResponseError;
 use crate::utils::http::{ResponseError::InvalidResposne, ResponseValidationError::BadStatusCode};
+use crate::utils::SpotifyConfig;
 
 pub struct SpotifyClient {
     auth: SpotifyAuthClient,
 }
 
 impl SpotifyClient {
-    pub fn new() -> Result<Self, InitialAuthError> {
+    pub fn new(config: SpotifyConfig) -> Result<Self, InitialAuthError> {
         Ok(Self {
-            auth: SpotifyAuthClient::new("".into(), "".into())?,
+            auth: SpotifyAuthClient::new(config.client_id.as_str(), config.client_secret.as_str())?,
         })
     }
 }
