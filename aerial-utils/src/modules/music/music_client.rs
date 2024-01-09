@@ -1,5 +1,7 @@
-use crate::utils::http::ResponseError;
+use std::error::Error;
 
 pub trait MusicClient {
-    fn play(&self) -> Result<(), ResponseError>;
+    type Error: Error;
+
+    fn pause(&self) -> Result<(), Self::Error>;
 }

@@ -2,7 +2,7 @@ mod modules;
 mod utils;
 
 use clap::{Parser, Subcommand};
-use modules::{Module, Music, MusicArgs};
+use modules::{music::MusicArgs, Module, Music};
 
 #[derive(Parser)]
 #[command(version)]

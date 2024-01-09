@@ -14,6 +14,8 @@ pub enum TcpServerError {
     FailedToGetStream(io::Error),
     #[error("Failed parse the request made to the server: {0}")]
     FailedToParseRequest(RequestFromStringError),
+    #[error("Failed to write to tab buffer")]
+    FailedBufferWrite(io::Error),
 }
 
 pub struct Request {
@@ -24,7 +26,7 @@ pub struct Request {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RequestFromStringError {
-    #[error("The given string")]
+    #[error("The given string is empty")]
     StringIsEmpty,
     #[error("The first line could not be parsed: {0}")]
     InvalidFirstLine(String),
@@ -39,12 +41,14 @@ impl TryFrom<Vec<String>> for Request {
         let request = value.first().ok_or(RequestFromStringError::StringIsEmpty)?;
         let request_parts: Vec<&str> = request.split_whitespace().collect();
         if request_parts.len() != 3 {
-            return Err(RequestFromStringError::StringIsEmpty);
+            return Err(RequestFromStringError::InvalidFirstLine(request.clone()));
         }
+
         let request_type = request_parts[0];
         let url_str = format!("https://example.com{}", request_parts[1]);
         let url = Url::try_from(url_str.as_str())
             .map_err(|_| RequestFromStringError::InvalidPath(url_str))?;
+
         Ok(Self {
             request_type: request_type.into(),
             path: url.path().into(),
@@ -53,7 +57,9 @@ impl TryFrom<Vec<String>> for Request {
     }
 }
 
-pub fn read_localhost_request(port: u16, path: String) -> Result<Request, TcpServerError> {
+pub fn read_localhost_request(port: u32) -> Result<Request, TcpServerError> {
+    // TODO: Actually support path
+    // TODO: Actually handle overtime
     let listener = TcpListener::bind(format!("localhost:{}", port))
         .map_err(TcpServerError::FailedToCreateTcpListener)?;
     let (stream, _) = listener
@@ -69,12 +75,11 @@ fn handle_requset_stream(mut stream: TcpStream) -> Result<Request, TcpServerErro
         .take_while(|line| !line.is_empty())
         .collect();
 
-    println!("Request: {:#?}", request);
-    write_close_tab_msg(stream);
+    write_close_tab_msg(stream).unwrap_or_else(|err| println!("WARNING: {}", err));
     Request::try_from(request).map_err(TcpServerError::FailedToParseRequest)
 }
 
-fn write_close_tab_msg(mut stream: TcpStream) {
+fn write_close_tab_msg(mut stream: TcpStream) -> Result<(), TcpServerError> {
     let content = "<h1>You can close this tab now</h1>";
     let status_line = "HTTP/1.1 200 OK";
     let response = format!(
@@ -83,5 +88,7 @@ fn write_close_tab_msg(mut stream: TcpStream) {
         content.len(),
         content
     );
-    stream.write_all(response.as_bytes()).unwrap();
+    stream
+        .write_all(response.as_bytes())
+        .map_err(TcpServerError::FailedBufferWrite)
 }
