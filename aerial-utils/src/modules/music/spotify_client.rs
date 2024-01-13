@@ -1,20 +1,25 @@
-use reqwest::StatusCode;
-use thiserror::Error;
-
-use super::spotify_auth::SpotifyAuthClient;
+use super::AuthError;
 use super::MusicClient;
-use crate::modules::music::spotify_auth::InitialAuthError;
+use super::SpotifyAuthClient;
+use crate::utils::config::SpotifyConfig;
 use crate::utils::http::ResponseError;
 use crate::utils::http::{ResponseError::InvalidResposne, ResponseValidationError::BadStatusCode};
+use crate::utils::{AuthClient, Cache};
+use reqwest::StatusCode;
+use thiserror::Error;
 
 pub struct SpotifyClient {
     auth: SpotifyAuthClient,
 }
 
 impl SpotifyClient {
-    pub fn new() -> Result<Self, InitialAuthError> {
+    pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
         Ok(Self {
-            auth: SpotifyAuthClient::new("".into(), "".into())?,
+            auth: SpotifyAuthClient::new(
+                cache,
+                config.client_id.as_str(),
+                config.client_secret.as_str(),
+            )?,
         })
     }
 }

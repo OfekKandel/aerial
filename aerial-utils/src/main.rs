@@ -3,6 +3,9 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use modules::{music::MusicArgs, Module, Music};
+use utils::{cache::Cache, Config};
+
+const CONFIG_PATH: &str = "./config.toml";
 
 #[derive(Parser)]
 #[command(version)]
@@ -18,15 +21,21 @@ enum Modules {
 }
 
 fn run_module(module: Modules) -> Result<(), Box<dyn std::error::Error>> {
-    match &module {
-        Modules::Music(args) => Ok(Music::run_with_args(args)?),
-    }
+    let mut cache = Cache::from_file("cache.toml")?;
+    let config = Config::from_file(CONFIG_PATH)?;
+    let res = match &module {
+        Modules::Music(args) => Ok(Music::run(args, &config, &mut cache)?),
+    };
+    // NOTE: Cache won't be changed if the operation failed, might be good because
+    // running the same command twice shouldn't get a different result
+    cache.to_file("cache.toml")?;
+    return res;
 }
 
 fn main() {
     let args = AerialUtilsArgs::parse();
     match run_module(args.module) {
         Ok(_) => println!("Command performed succesfully"),
-        Err(err) => println!("Module failed: {}", err),
+        Err(err) => eprintln!("MODULE FAILED: {}", err),
     }
 }
