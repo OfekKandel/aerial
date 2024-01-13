@@ -12,18 +12,6 @@ pub struct SpotifyClient {
     auth: SpotifyAuthClient,
 }
 
-impl SpotifyClient {
-    pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
-        Ok(Self {
-            auth: SpotifyAuthClient::new(
-                cache,
-                config.client_id.as_str(),
-                config.client_secret.as_str(),
-            )?,
-        })
-    }
-}
-
 #[derive(Error, Debug)]
 pub enum SpotifyError {
     #[error("There is no actively playing Spotify device")]
@@ -45,5 +33,29 @@ impl MusicClient for SpotifyClient {
             }
             Err(err) => Err(SpotifyError::ApiRequestError(err)),
         }
+    }
+
+    fn resume(&self) -> Result<(), Self::Error> {
+        match self.auth.put_request("me/player/play") {
+            Ok(_) => Ok(()),
+            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
+                if body.contains("NO_ACTIVE_DEVICE") =>
+            {
+                Err(SpotifyError::NoActiveDevice)
+            }
+            Err(err) => Err(SpotifyError::ApiRequestError(err)),
+        }
+    }
+}
+
+impl SpotifyClient {
+    pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
+        Ok(Self {
+            auth: SpotifyAuthClient::new(
+                cache,
+                config.client_id.as_str(),
+                config.client_secret.as_str(),
+            )?,
+        })
     }
 }
