@@ -36,6 +36,7 @@ pub struct ModulesConfig {
 
 #[derive(Deserialize)]
 pub struct SpotifyConfig {
+    // TODO: Add option to not set these in the config and give them at runtime instead
     pub client_id: String,
     pub client_secret: String,
 }
