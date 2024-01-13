@@ -27,6 +27,16 @@ pub struct SpotifyAuthClient {
 }
 
 impl AuthClient for SpotifyAuthClient {
+    fn post_request(&self, endpoint: &str) -> Result<Response, ResponseError> {
+        Ok(reqwest::blocking::Client::new()
+            .post(format!("{}/{}", API_ENDPOINT, endpoint))
+            .header(CONTENT_TYPE, "application/json")
+            .header(AUTHORIZATION, self.token.as_auth())
+            .header(CONTENT_LENGTH, 0)
+            .send()
+            .validate()?)
+    }
+
     fn put_request(&self, endpoint: &str) -> Result<Response, ResponseError> {
         Ok(reqwest::blocking::Client::new()
             .put(format!("{}/{}", API_ENDPOINT, endpoint))

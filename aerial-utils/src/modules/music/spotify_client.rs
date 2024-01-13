@@ -46,6 +46,30 @@ impl MusicClient for SpotifyClient {
             Err(err) => Err(SpotifyError::ApiRequestError(err)),
         }
     }
+
+    fn goto_next_track(&self) -> Result<(), Self::Error> {
+        match self.auth.post_request("me/player/next") {
+            Ok(_) => Ok(()),
+            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
+                if body.contains("NO_ACTIVE_DEVICE") =>
+            {
+                Err(SpotifyError::NoActiveDevice)
+            }
+            Err(err) => Err(SpotifyError::ApiRequestError(err)),
+        }
+    }
+
+    fn goto_prev_track(&self) -> Result<(), Self::Error> {
+        match self.auth.post_request("me/player/prev") {
+            Ok(_) => Ok(()),
+            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
+                if body.contains("NO_ACTIVE_DEVICE") =>
+            {
+                Err(SpotifyError::NoActiveDevice)
+            }
+            Err(err) => Err(SpotifyError::ApiRequestError(err)),
+        }
+    }
 }
 
 impl SpotifyClient {
