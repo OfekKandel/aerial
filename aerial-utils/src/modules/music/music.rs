@@ -18,8 +18,10 @@ pub struct MusicArgs {
 
 #[derive(Subcommand)]
 pub enum MusicCommands {
-    /// Play (resume) the currently playing track
+    /// Pause the currently playing track
     Pause,
+    /// Resume the currently playing track
+    Resume,
 }
 
 #[derive(Error, Debug)]
@@ -49,6 +51,7 @@ impl Module for Music {
 
         match args.command {
             MusicCommands::Pause => client.pause(),
+            MusicCommands::Resume => client.resume(),
         }
         .map_err(MusicError::FailedAction)
     }
