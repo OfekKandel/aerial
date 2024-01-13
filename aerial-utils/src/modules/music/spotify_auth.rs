@@ -89,7 +89,6 @@ impl SpotifyAuthClient {
         client_id: &str,
         client_secret: &str,
     ) -> Result<Token, ResponseError> {
-        println!("Refreshing token");
         let encoded_auth = base64_engine.encode(format!("{}:{}", client_id, client_secret));
         let response = reqwest::blocking::Client::new()
             .post(format!("{}/api/token", AUTH_ENDPOINT))
@@ -177,6 +176,7 @@ struct RefreshTokenFromApi {
     access_token: String,
     token_type: String,
     expires_in: u64,
+    refresh_token: Option<String>,
 }
 
 impl From<TokenFromApi> for Token {
@@ -198,7 +198,9 @@ impl RefreshTokenFromApi {
             token_type: self.token_type,
             expires_in: Duration::from_secs(self.expires_in),
             time_set: SystemTime::now(),
-            refresh_token: prev_token.refresh_token.clone(),
+            refresh_token: self
+                .refresh_token
+                .unwrap_or(prev_token.refresh_token.clone()),
         }
     }
 }
