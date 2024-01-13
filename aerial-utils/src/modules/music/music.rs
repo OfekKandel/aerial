@@ -22,6 +22,10 @@ pub enum MusicCommands {
     Pause,
     /// Resume the currently playing track
     Resume,
+    /// Go to the next track
+    Next,
+    /// Go to the previous track
+    Prev,
 }
 
 #[derive(Error, Debug)]
@@ -52,6 +56,8 @@ impl Module for Music {
         match args.command {
             MusicCommands::Pause => client.pause(),
             MusicCommands::Resume => client.resume(),
+            MusicCommands::Next => client.goto_next_track(),
+            MusicCommands::Prev => client.goto_next_track(),
         }
         .map_err(MusicError::FailedAction)
     }

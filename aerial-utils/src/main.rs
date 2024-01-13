@@ -20,6 +20,7 @@ enum Modules {
     Music(MusicArgs),
 }
 
+// TODO: Make this a normal error
 fn run_module(module: Modules) -> Result<(), Box<dyn std::error::Error>> {
     let mut cache = Cache::from_file("cache.toml")?;
     let config = Config::from_file(CONFIG_PATH)?;
