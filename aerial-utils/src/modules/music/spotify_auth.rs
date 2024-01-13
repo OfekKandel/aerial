@@ -40,10 +40,10 @@ impl AuthClient for SpotifyAuthClient {
 
 #[derive(Debug, Error)]
 pub enum AuthError {
-    #[error("Failed to refresh authentication token: {0}")]
-    FailedTokenRefresh(ResponseError),
     #[error("Failed initial authentication: {0}")]
     FailedInitialAuth(InitialAuthError),
+    #[error("Failed to refresh authentication token: {0}")]
+    FailedTokenRefresh(ResponseError),
 }
 
 #[derive(Debug, Error)]

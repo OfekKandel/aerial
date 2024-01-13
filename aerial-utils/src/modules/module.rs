@@ -1,6 +1,5 @@
-use std::fmt::Display;
-
 use crate::utils::{Cache, Config};
+use std::fmt::Display;
 
 pub trait Module: Display {
     type Args: clap::Args;
