@@ -1,0 +1,42 @@
+use super::{AuthError, SpotifyAuthClient};
+use crate::utils::{
+    api_handler::ApiHandler,
+    auth_client::AddAuthExt,
+    config::SpotifyConfig,
+    http::{ExtractFromResposneExt, ResponseError, ValidateResponseExt},
+    ApiRequestSpec, Cache,
+};
+use reqwest::header::{CONTENT_LENGTH, CONTENT_TYPE};
+use serde::de::DeserializeOwned;
+
+const API_ENDPOINT: &str = "https://api.spotify.com/v1";
+
+pub struct SpotifyApiHandler {
+    auth: SpotifyAuthClient,
+}
+
+impl SpotifyApiHandler {
+    pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
+        Ok(Self {
+            auth: SpotifyAuthClient::new(
+                cache,
+                config.client_id.as_str(),
+                config.client_secret.as_str(),
+            )?,
+        })
+    }
+}
+
+impl ApiHandler for SpotifyApiHandler {
+    fn make_request<T: DeserializeOwned>(
+        &self,
+        spec: &dyn ApiRequestSpec<Resposne = T>,
+    ) -> Result<T, ResponseError> {
+        let request = spec
+            .build(API_ENDPOINT)
+            .auth(&self.auth)
+            .header(CONTENT_TYPE, "application/json")
+            .header(CONTENT_LENGTH, 0);
+        Ok(request.send().validate()?.extract()?)
+    }
+}

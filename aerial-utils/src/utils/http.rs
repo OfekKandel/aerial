@@ -21,7 +21,7 @@ pub enum ResponseValidationError {
 #[derive(Error, Debug)]
 pub enum ResponseExtractionError {
     #[error("Failed to extract data from response JSON:\n{0}")]
-    FailedToExtractFromJSON(reqwest::Error),
+    FailedToExtractFromJSON(serde_json::Error),
 }
 
 pub trait ValidateResponseExt {
@@ -49,7 +49,11 @@ pub trait ExtractFromResposneExt {
 
 impl ExtractFromResposneExt for Response {
     fn extract<T: DeserializeOwned>(self) -> Result<T, ResponseExtractionError> {
-        self.json()
+        let text = match self.text() {
+            Ok(text) if !text.is_empty() => text,
+            _ => "{}".into(),
+        };
+        serde_json::from_str(text.as_str())
             .map_err(ResponseExtractionError::FailedToExtractFromJSON)
     }
 }
