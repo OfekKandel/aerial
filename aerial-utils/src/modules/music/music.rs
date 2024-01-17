@@ -57,8 +57,9 @@ impl Module for Music {
             MusicCommands::Pause => client.pause(),
             MusicCommands::Resume => client.resume(),
             MusicCommands::Next => client.goto_next_track(),
-            MusicCommands::Prev => client.goto_next_track(),
+            MusicCommands::Prev => client.goto_prev_track(),
         }
+        .map(|_| ())
         .map_err(MusicError::FailedAction)
     }
 }

@@ -1,21 +1,25 @@
+use super::spotify_api_handler::SpotifyApiHandler;
+use super::spotify_api_spec::GotoNextTrack;
+use super::spotify_api_spec::GotoPrevTrack;
+use super::spotify_api_spec::Pause;
+use super::spotify_api_spec::Resume;
 use super::AuthError;
 use super::MusicClient;
-use super::SpotifyAuthClient;
+use crate::utils::api_handler::ApiHandler;
+use crate::utils::api_spec::NoResponse;
 use crate::utils::config::SpotifyConfig;
 use crate::utils::http::ResponseError;
-use crate::utils::http::{ResponseError::InvalidResposne, ResponseValidationError::BadStatusCode};
-use crate::utils::{AuthClient, Cache};
-use reqwest::StatusCode;
+use crate::utils::Cache;
 use thiserror::Error;
 
 pub struct SpotifyClient {
-    auth: SpotifyAuthClient,
+    api_handler: SpotifyApiHandler,
 }
 
 #[derive(Error, Debug)]
 pub enum SpotifyError {
-    #[error("There is no actively playing Spotify device")]
-    NoActiveDevice,
+    // #[error("There is no actively playing Spotify device")]
+    // NoActiveDevice,
     #[error("Theres an error in the API request: {0}")]
     ApiRequestError(ResponseError),
 }
@@ -23,63 +27,39 @@ pub enum SpotifyError {
 impl MusicClient for SpotifyClient {
     type Error = SpotifyError;
 
-    fn pause(&self) -> Result<(), SpotifyError> {
-        match self.auth.put_request("me/player/pause") {
-            Ok(_) => Ok(()),
-            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
-                if body.contains("NO_ACTIVE_DEVICE") =>
-            {
-                Err(SpotifyError::NoActiveDevice)
-            }
-            Err(err) => Err(SpotifyError::ApiRequestError(err)),
-        }
+    fn pause(&self) -> Result<NoResponse, SpotifyError> {
+        self.api_handler
+            .make_request(&Pause {})
+            .map_err(SpotifyError::ApiRequestError)
     }
 
-    fn resume(&self) -> Result<(), Self::Error> {
-        match self.auth.put_request("me/player/play") {
-            Ok(_) => Ok(()),
-            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
-                if body.contains("NO_ACTIVE_DEVICE") =>
-            {
-                Err(SpotifyError::NoActiveDevice)
-            }
-            Err(err) => Err(SpotifyError::ApiRequestError(err)),
-        }
+    fn resume(&self) -> Result<NoResponse, Self::Error> {
+        self.api_handler
+            .make_request(&Resume {})
+            .map_err(SpotifyError::ApiRequestError)
     }
 
-    fn goto_next_track(&self) -> Result<(), Self::Error> {
-        match self.auth.post_request("me/player/next") {
-            Ok(_) => Ok(()),
-            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
-                if body.contains("NO_ACTIVE_DEVICE") =>
-            {
-                Err(SpotifyError::NoActiveDevice)
-            }
-            Err(err) => Err(SpotifyError::ApiRequestError(err)),
-        }
+    fn goto_next_track(&self) -> Result<NoResponse, Self::Error> {
+        self.api_handler
+            .make_request(&GotoNextTrack {})
+            .map_err(SpotifyError::ApiRequestError)
     }
 
-    fn goto_prev_track(&self) -> Result<(), Self::Error> {
-        match self.auth.post_request("me/player/prev") {
-            Ok(_) => Ok(()),
-            Err(InvalidResposne(BadStatusCode(StatusCode::NOT_FOUND, body)))
-                if body.contains("NO_ACTIVE_DEVICE") =>
-            {
-                Err(SpotifyError::NoActiveDevice)
-            }
-            Err(err) => Err(SpotifyError::ApiRequestError(err)),
-        }
+    fn goto_prev_track(&self) -> Result<NoResponse, Self::Error> {
+        self.api_handler
+            .make_request(&GotoPrevTrack {})
+            .map_err(SpotifyError::ApiRequestError)
     }
 }
 
 impl SpotifyClient {
     pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
         Ok(Self {
-            auth: SpotifyAuthClient::new(
-                cache,
-                config.client_id.as_str(),
-                config.client_secret.as_str(),
-            )?,
+            api_handler: SpotifyApiHandler::new(config, cache)?,
         })
     }
+
+    // fn get_playback_state(&self) {
+    //     self.auth.get_request("me/player/prev")
+    // }
 }

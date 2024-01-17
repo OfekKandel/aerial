@@ -7,8 +7,8 @@ use crate::utils::{
 };
 use base64::{engine::general_purpose::STANDARD as base64_engine, Engine as _};
 use reqwest::{
-    blocking::Response,
-    header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
+    blocking::RequestBuilder,
+    header::{AUTHORIZATION, CONTENT_TYPE},
 };
 use std::{
     collections::HashMap,
@@ -18,7 +18,6 @@ use thiserror::Error;
 use url::Url;
 
 const AUTH_ENDPOINT: &str = "https://accounts.spotify.com";
-const API_ENDPOINT: &str = "https://api.spotify.com/v1";
 const REDIRECT_PORT: u32 = 8888;
 const API_SCOPE: &str = "user-modify-playback-state";
 
@@ -27,24 +26,8 @@ pub struct SpotifyAuthClient {
 }
 
 impl AuthClient for SpotifyAuthClient {
-    fn post_request(&self, endpoint: &str) -> Result<Response, ResponseError> {
-        Ok(reqwest::blocking::Client::new()
-            .post(format!("{}/{}", API_ENDPOINT, endpoint))
-            .header(CONTENT_TYPE, "application/json")
-            .header(AUTHORIZATION, self.token.as_auth())
-            .header(CONTENT_LENGTH, 0)
-            .send()
-            .validate()?)
-    }
-
-    fn put_request(&self, endpoint: &str) -> Result<Response, ResponseError> {
-        Ok(reqwest::blocking::Client::new()
-            .put(format!("{}/{}", API_ENDPOINT, endpoint))
-            .header(CONTENT_TYPE, "application/json")
-            .header(AUTHORIZATION, self.token.as_auth())
-            .header(CONTENT_LENGTH, 0)
-            .send()
-            .validate()?)
+    fn add_auth(&self, request: RequestBuilder) -> RequestBuilder {
+        request.header(AUTHORIZATION, self.token.as_auth())
     }
 }
 
