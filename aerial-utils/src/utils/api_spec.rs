@@ -35,3 +35,16 @@ impl ApiRequest {
 
 #[derive(Deserialize)]
 pub struct NoResponse {}
+
+#[macro_export]
+macro_rules! impl_endpoint {
+    ($spec:ident, $method:path, $endpoint:expr, $response:ident) => {
+        impl ApiRequestSpec for $spec {
+            type Resposne = $response;
+
+            fn request(&self) -> ApiRequest {
+                ApiRequest::basic($method, $endpoint)
+            }
+        }
+    };
+}
