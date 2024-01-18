@@ -46,8 +46,7 @@ impl TryFrom<Vec<String>> for Request {
 
         let request_type = request_parts[0];
         let url_str = format!("https://example.com{}", request_parts[1]);
-        let url = Url::try_from(url_str.as_str())
-            .map_err(|_| RequestFromStringError::InvalidPath(url_str))?;
+        let url = Url::try_from(url_str.as_str()).map_err(|_| RequestFromStringError::InvalidPath(url_str))?;
 
         Ok(Self {
             request_type: request_type.into(),
@@ -60,11 +59,8 @@ impl TryFrom<Vec<String>> for Request {
 pub fn read_localhost_request(port: u32) -> Result<Request, TcpServerError> {
     // TODO: Actually support path
     // TODO: Actually handle overtime
-    let listener = TcpListener::bind(format!("localhost:{}", port))
-        .map_err(TcpServerError::FailedToCreateTcpListener)?;
-    let (stream, _) = listener
-        .accept()
-        .map_err(TcpServerError::FailedToGetStream)?;
+    let listener = TcpListener::bind(format!("localhost:{}", port)).map_err(TcpServerError::FailedToCreateTcpListener)?;
+    let (stream, _) = listener.accept().map_err(TcpServerError::FailedToGetStream)?;
     handle_requset_stream(stream)
 }
 
@@ -82,13 +78,6 @@ fn handle_requset_stream(mut stream: TcpStream) -> Result<Request, TcpServerErro
 fn write_close_tab_msg(mut stream: TcpStream) -> Result<(), TcpServerError> {
     let content = "<h1>You can close this tab now</h1>";
     let status_line = "HTTP/1.1 200 OK";
-    let response = format!(
-        "{}\r\nContent-Length: {}\r\n\r\n{}",
-        status_line,
-        content.len(),
-        content
-    );
-    stream
-        .write_all(response.as_bytes())
-        .map_err(TcpServerError::FailedBufferWrite)
+    let response = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, content.len(), content);
+    stream.write_all(response.as_bytes()).map_err(TcpServerError::FailedBufferWrite)
 }

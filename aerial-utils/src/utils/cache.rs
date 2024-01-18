@@ -25,10 +25,7 @@ impl Cache {
         match fs::read_to_string(path) {
             Ok(raw_cache) => toml::from_str(&raw_cache).map_err(CacheError::FailedToParseToml),
             Err(err) => {
-                eprintln!(
-                    "WARNING: Could not read cache file from `{}`: {}",
-                    path, err
-                );
+                eprintln!("WARNING: Could not read cache file from `{}`: {}", path, err);
                 Ok(Self::default())
             }
         }
@@ -37,8 +34,7 @@ impl Cache {
     pub fn to_file(&self, path: &str) -> Result<(), CacheError> {
         let mut file = File::create(path).map_err(CacheError::FailedToWriteFile)?;
         let cache = toml::to_string(self).map_err(CacheError::FailedToPrintCache)?;
-        file.write_all(&cache.into_bytes())
-            .map_err(CacheError::FailedToWriteFile)?;
+        file.write_all(&cache.into_bytes()).map_err(CacheError::FailedToWriteFile)?;
         Ok(())
     }
 }

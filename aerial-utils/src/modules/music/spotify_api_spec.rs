@@ -14,9 +14,4 @@ pub struct GotoNextTrack;
 impl_endpoint!(GotoNextTrack, Method::POST, "me/player/next", NoResponse);
 
 pub struct GotoPrevTrack;
-impl_endpoint!(
-    GotoPrevTrack,
-    Method::POST,
-    "me/player/previous",
-    NoResponse
-);
+impl_endpoint!(GotoPrevTrack, Method::POST, "me/player/previous", NoResponse);

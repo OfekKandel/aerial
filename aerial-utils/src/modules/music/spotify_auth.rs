@@ -56,20 +56,15 @@ pub enum InitialAuthError {
 impl SpotifyAuthClient {
     pub fn new(cache: &mut Cache, client_id: &str, client_secret: &str) -> Result<Self, AuthError> {
         let token = Self::auth(cache, client_id, client_secret)?;
-        cache.modules.spotify = Some(SpotifyCache {
-            token: token.clone(),
-        });
+        cache.modules.spotify = Some(SpotifyCache { token: token.clone() });
         Ok(Self { token })
     }
 
     fn auth(cache: &Cache, client_id: &str, client_secret: &str) -> Result<Token, AuthError> {
         match Self::get_token_from_cache(cache) {
             Some(token) if token.is_valid() => Ok(token.clone()),
-            Some(token) => Self::refresh_token(token, client_id, client_secret)
-                .map_err(AuthError::FailedTokenRefresh),
-            None => {
-                Self::initial_auth(client_id, client_secret).map_err(AuthError::FailedInitialAuth)
-            }
+            Some(token) => Self::refresh_token(token, client_id, client_secret).map_err(AuthError::FailedTokenRefresh),
+            None => Self::initial_auth(client_id, client_secret).map_err(AuthError::FailedInitialAuth),
         }
     }
 
@@ -77,32 +72,21 @@ impl SpotifyAuthClient {
         Some(&cache.modules.spotify.as_ref()?.token)
     }
 
-    fn refresh_token(
-        prev_token: &Token,
-        client_id: &str,
-        client_secret: &str,
-    ) -> Result<Token, ResponseError> {
+    fn refresh_token(prev_token: &Token, client_id: &str, client_secret: &str) -> Result<Token, ResponseError> {
         let encoded_auth = base64_engine.encode(format!("{}:{}", client_id, client_secret));
         let response = reqwest::blocking::Client::new()
             .post(format!("{}/api/token", AUTH_ENDPOINT))
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .header(AUTHORIZATION, format!("Basic {}", encoded_auth))
-            .form(&[
-                ("grant_type", "refresh_token"),
-                ("refresh_token", prev_token.refresh_token.as_str()),
-            ])
+            .form(&[("grant_type", "refresh_token"), ("refresh_token", prev_token.refresh_token.as_str())])
             .send();
-        Ok(response
-            .validate()?
-            .extract::<RefreshTokenFromApi>()?
-            .to_token(prev_token))
+        Ok(response.validate()?.extract::<RefreshTokenFromApi>()?.to_token(prev_token))
     }
 
     fn initial_auth(client_id: &str, client_secret: &str) -> Result<Token, InitialAuthError> {
         Self::open_auth_window(client_id)?;
         let code = Self::get_code_from_callback()?;
-        let token = Self::get_token(code, client_id, client_secret)
-            .map_err(InitialAuthError::FailedToGetToken)?;
+        let token = Self::get_token(code, client_id, client_secret).map_err(InitialAuthError::FailedToGetToken)?;
         Ok(token)
     }
 
@@ -123,22 +107,15 @@ impl SpotifyAuthClient {
     }
 
     fn get_code_from_callback() -> Result<String, InitialAuthError> {
-        let callback = read_localhost_request(REDIRECT_PORT)
-            .map_err(InitialAuthError::FailedToReadRedirect)?;
+        let callback = read_localhost_request(REDIRECT_PORT).map_err(InitialAuthError::FailedToReadRedirect)?;
         Ok(callback
             .params
             .get("code")
-            .ok_or(InitialAuthError::CodeNotFoundInRedirect(
-                callback.params.clone(),
-            ))?
+            .ok_or(InitialAuthError::CodeNotFoundInRedirect(callback.params.clone()))?
             .to_string())
     }
 
-    fn get_token(
-        code: String,
-        client_id: &str,
-        client_secret: &str,
-    ) -> Result<Token, ResponseError> {
+    fn get_token(code: String, client_id: &str, client_secret: &str) -> Result<Token, ResponseError> {
         let encoded_auth = base64_engine.encode(format!("{}:{}", client_id, client_secret));
         let redirect_uri = format!("http://localhost:{}/callback", REDIRECT_PORT);
         let response = reqwest::blocking::Client::new()
@@ -191,9 +168,7 @@ impl RefreshTokenFromApi {
             token_type: self.token_type,
             expires_in: Duration::from_secs(self.expires_in),
             time_set: SystemTime::now(),
-            refresh_token: self
-                .refresh_token
-                .unwrap_or(prev_token.refresh_token.clone()),
+            refresh_token: self.refresh_token.unwrap_or(prev_token.refresh_token.clone()),
         }
     }
 }
