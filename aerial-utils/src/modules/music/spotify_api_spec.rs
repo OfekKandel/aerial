@@ -1,40 +1,22 @@
+use crate::impl_endpoint;
 use crate::utils::api_spec::NoResponse;
 use crate::utils::ApiRequest;
 use crate::utils::ApiRequestSpec;
 use reqwest::Method;
 
 pub struct Pause;
-impl ApiRequestSpec for Pause {
-    type Resposne = NoResponse;
-
-    fn request(&self) -> ApiRequest {
-        ApiRequest::basic(Method::PUT, "me/player/pause")
-    }
-}
+impl_endpoint!(Pause, Method::PUT, "me/player/pause", NoResponse);
 
 pub struct Resume;
-impl ApiRequestSpec for Resume {
-    type Resposne = NoResponse;
-
-    fn request(&self) -> ApiRequest {
-        ApiRequest::basic(Method::PUT, "me/player/resume")
-    }
-}
+impl_endpoint!(Resume, Method::PUT, "me/player/play", NoResponse);
 
 pub struct GotoNextTrack;
-impl ApiRequestSpec for GotoNextTrack {
-    type Resposne = NoResponse;
-
-    fn request(&self) -> ApiRequest {
-        ApiRequest::basic(Method::POST, "me/player/next")
-    }
-}
+impl_endpoint!(GotoNextTrack, Method::POST, "me/player/next", NoResponse);
 
 pub struct GotoPrevTrack;
-impl ApiRequestSpec for GotoPrevTrack {
-    type Resposne = NoResponse;
-
-    fn request(&self) -> ApiRequest {
-        ApiRequest::basic(Method::POST, "me/player/previous")
-    }
-}
+impl_endpoint!(
+    GotoPrevTrack,
+    Method::POST,
+    "me/player/previous",
+    NoResponse
+);

@@ -1,4 +1,5 @@
 pub mod api_handler;
+#[macro_use]
 pub mod api_spec;
 pub mod auth_client;
 pub mod cache;
