@@ -45,13 +45,8 @@ impl Module for Music {
     type Error = MusicError;
 
     fn run(args: &Self::Args, config: &Config, cache: &mut Cache) -> Result<(), Self::Error> {
-        let spotify_config = &config
-            .modules
-            .spotify
-            .as_ref()
-            .ok_or(MusicError::MissingConfig)?;
-        let client =
-            SpotifyClient::new(spotify_config, cache).map_err(MusicError::FailedInitialAuth)?;
+        let spotify_config = &config.modules.spotify.as_ref().ok_or(MusicError::MissingConfig)?;
+        let client = SpotifyClient::new(spotify_config, cache).map_err(MusicError::FailedInitialAuth)?;
 
         match args.command {
             MusicCommands::Pause => client.pause(),

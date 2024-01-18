@@ -18,20 +18,13 @@ pub struct SpotifyApiHandler {
 impl SpotifyApiHandler {
     pub fn new(config: &SpotifyConfig, cache: &mut Cache) -> Result<Self, AuthError> {
         Ok(Self {
-            auth: SpotifyAuthClient::new(
-                cache,
-                config.client_id.as_str(),
-                config.client_secret.as_str(),
-            )?,
+            auth: SpotifyAuthClient::new(cache, config.client_id.as_str(), config.client_secret.as_str())?,
         })
     }
 }
 
 impl ApiHandler for SpotifyApiHandler {
-    fn make_request<T: DeserializeOwned>(
-        &self,
-        spec: &dyn ApiRequestSpec<Resposne = T>,
-    ) -> Result<T, ResponseError> {
+    fn make_request<T: DeserializeOwned>(&self, spec: &dyn ApiRequestSpec<Resposne = T>) -> Result<T, ResponseError> {
         let request = spec
             .build(API_ENDPOINT)
             .auth(&self.auth)

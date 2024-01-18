@@ -28,27 +28,19 @@ impl MusicClient for SpotifyClient {
     type Error = SpotifyError;
 
     fn pause(&self) -> Result<NoResponse, SpotifyError> {
-        self.api_handler
-            .make_request(&Pause {})
-            .map_err(SpotifyError::ApiRequestError)
+        self.api_handler.make_request(&Pause {}).map_err(SpotifyError::ApiRequestError)
     }
 
     fn resume(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler
-            .make_request(&Resume {})
-            .map_err(SpotifyError::ApiRequestError)
+        self.api_handler.make_request(&Resume {}).map_err(SpotifyError::ApiRequestError)
     }
 
     fn goto_next_track(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler
-            .make_request(&GotoNextTrack {})
-            .map_err(SpotifyError::ApiRequestError)
+        self.api_handler.make_request(&GotoNextTrack {}).map_err(SpotifyError::ApiRequestError)
     }
 
     fn goto_prev_track(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler
-            .make_request(&GotoPrevTrack {})
-            .map_err(SpotifyError::ApiRequestError)
+        self.api_handler.make_request(&GotoPrevTrack {}).map_err(SpotifyError::ApiRequestError)
     }
 }
 

@@ -19,10 +19,7 @@ impl Config {
         match fs::read_to_string(path) {
             Ok(raw_config) => toml::from_str(&raw_config).map_err(ConfigError::FailedToParseToml),
             Err(err) => {
-                eprintln!(
-                    "WARNING: Could not read config file from `{}`: {}",
-                    path, err
-                );
+                eprintln!("WARNING: Could not read config file from `{}`: {}", path, err);
                 Ok(Self::default())
             }
         }

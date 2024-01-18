@@ -53,8 +53,7 @@ impl ExtractFromResposneExt for Response {
             Ok(text) if !text.is_empty() => text,
             _ => "{}".into(),
         };
-        serde_json::from_str(text.as_str())
-            .map_err(ResponseExtractionError::FailedToExtractFromJSON)
+        serde_json::from_str(text.as_str()).map_err(ResponseExtractionError::FailedToExtractFromJSON)
     }
 }
 
