@@ -1,4 +1,5 @@
 use super::spotify_api_handler::SpotifyApiHandler;
+use super::spotify_api_spec::GetPlaybackState;
 use super::spotify_api_spec::GotoNextTrack;
 use super::spotify_api_spec::GotoPrevTrack;
 use super::spotify_api_spec::Pause;
@@ -18,8 +19,8 @@ pub struct SpotifyClient {
 
 #[derive(Error, Debug)]
 pub enum SpotifyError {
-    // #[error("There is no actively playing Spotify device")]
-    // NoActiveDevice,
+    #[error("There is no actively playing Spotify device")]
+    NoActiveDevice,
     #[error("Theres an error in the API request: {0}")]
     ApiRequestError(ResponseError),
 }
@@ -28,19 +29,31 @@ impl MusicClient for SpotifyClient {
     type Error = SpotifyError;
 
     fn pause(&self) -> Result<NoResponse, SpotifyError> {
-        self.api_handler.make_request(&Pause {}).map_err(SpotifyError::ApiRequestError)
+        if !self.is_active()? {
+            return Err(SpotifyError::NoActiveDevice);
+        }
+        self.api_handler.make_request(&Pause).map_err(SpotifyError::ApiRequestError)
     }
 
     fn resume(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler.make_request(&Resume {}).map_err(SpotifyError::ApiRequestError)
+        if !self.is_active()? {
+            return Err(SpotifyError::NoActiveDevice);
+        }
+        self.api_handler.make_request(&Resume).map_err(SpotifyError::ApiRequestError)
     }
 
     fn goto_next_track(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler.make_request(&GotoNextTrack {}).map_err(SpotifyError::ApiRequestError)
+        if !self.is_active()? {
+            return Err(SpotifyError::NoActiveDevice);
+        }
+        self.api_handler.make_request(&GotoNextTrack).map_err(SpotifyError::ApiRequestError)
     }
 
     fn goto_prev_track(&self) -> Result<NoResponse, Self::Error> {
-        self.api_handler.make_request(&GotoPrevTrack {}).map_err(SpotifyError::ApiRequestError)
+        if !self.is_active()? {
+            return Err(SpotifyError::NoActiveDevice);
+        }
+        self.api_handler.make_request(&GotoPrevTrack).map_err(SpotifyError::ApiRequestError)
     }
 }
 
@@ -51,7 +64,8 @@ impl SpotifyClient {
         })
     }
 
-    // fn get_playback_state(&self) {
-    //     self.auth.get_request("me/player/prev")
-    // }
+    fn is_active(&self) -> Result<bool, SpotifyError> {
+        let playback_state = self.api_handler.make_request(&GetPlaybackState).map_err(SpotifyError::ApiRequestError)?;
+        Ok(playback_state.device.is_active)
+    }
 }
