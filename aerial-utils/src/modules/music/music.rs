@@ -26,6 +26,8 @@ pub enum MusicCommands {
     Next,
     /// Go to the previous track
     Prev,
+    /// Print information about the current track
+    CurrTrack,
     /// Initialize authentication to Spotify
     Auth,
     /// Remove authentication to Spotify
@@ -62,11 +64,12 @@ impl Module for Music {
                 SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
                     .map_err(SpotifyError::FailedInitialAuth)
             }
-            MusicCommands::Pause => Self::generate_client(&spotify_config, cache)?.pause().map(|_| ()),
-            MusicCommands::Resume => Self::generate_client(&spotify_config, cache)?.resume().map(|_| ()),
-            MusicCommands::Next => Self::generate_client(&spotify_config, cache)?.goto_next_track().map(|_| ()),
-            MusicCommands::Prev => Self::generate_client(&spotify_config, cache)?.goto_prev_track().map(|_| ()),
+            MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause().map(|_| ()),
+            MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume().map(|_| ()),
+            MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track().map(|_| ()),
+            MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track().map(|_| ()),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
+            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_curr_track(),
         }
         .map_err(MusicError::FailedAction)
     }

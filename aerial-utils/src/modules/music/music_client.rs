@@ -8,4 +8,5 @@ pub trait MusicClient {
     fn resume(&self) -> Result<NoResponse, Self::Error>;
     fn goto_next_track(&self) -> Result<NoResponse, Self::Error>;
     fn goto_prev_track(&self) -> Result<NoResponse, Self::Error>;
+    fn print_curr_track(&self) -> Result<(), Self::Error>;
 }
