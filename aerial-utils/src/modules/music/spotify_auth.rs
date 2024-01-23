@@ -33,8 +33,8 @@ impl AuthClient for SpotifyAuthClient {
 
 #[derive(Debug, Error)]
 pub enum AuthError {
-    #[error("Failed initial authentication: {0}")]
-    FailedInitialAuth(InitialAuthError),
+    #[error("You are unauthenticated, run `music auth` to to authenticate")]
+    NeedsInitialAuth,
     #[error("Failed to refresh authentication token: {0}")]
     FailedTokenRefresh(ResponseError),
 }
@@ -60,11 +60,21 @@ impl SpotifyAuthClient {
         Ok(Self { token })
     }
 
+    pub fn remove_auth_from_cache(cache: &mut Cache) {
+        cache.modules.spotify = None
+    }
+
+    pub fn add_auth_to_cache(cache: &mut Cache, client_id: &str, client_secret: &str) -> Result<(), InitialAuthError> {
+        let token = Self::initial_auth(client_id, client_secret)?;
+        cache.modules.spotify = Some(SpotifyCache { token: token.clone() });
+        Ok(())
+    }
+
     fn auth(cache: &Cache, client_id: &str, client_secret: &str) -> Result<Token, AuthError> {
         match Self::get_token_from_cache(cache) {
             Some(token) if token.is_valid() => Ok(token.clone()),
             Some(token) => Self::refresh_token(token, client_id, client_secret).map_err(AuthError::FailedTokenRefresh),
-            None => Self::initial_auth(client_id, client_secret).map_err(AuthError::FailedInitialAuth),
+            None => Err(AuthError::NeedsInitialAuth),
         }
     }
 
