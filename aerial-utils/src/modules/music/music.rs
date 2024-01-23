@@ -18,6 +18,8 @@ pub struct MusicArgs {
 
 #[derive(Subcommand)]
 pub enum MusicCommands {
+    /// Pause the music if it's playing, resume it if it's paused
+    Toggle,
     /// Pause the currently playing track
     Pause,
     /// Resume the currently playing track
@@ -64,10 +66,11 @@ impl Module for Music {
                 SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
                     .map_err(SpotifyError::FailedInitialAuth)
             }
-            MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause().map(|_| ()),
-            MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume().map(|_| ()),
-            MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track().map(|_| ()),
-            MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track().map(|_| ()),
+            MusicCommands::Toggle => Self::generate_client(spotify_config, cache)?.toggle(),
+            MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause(),
+            MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume(),
+            MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
+            MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
             MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_curr_track(),
         }
