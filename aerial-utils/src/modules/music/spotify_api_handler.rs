@@ -12,7 +12,7 @@ use serde::de::DeserializeOwned;
 const API_ENDPOINT: &str = "https://api.spotify.com/v1";
 
 pub struct SpotifyApiHandler {
-    auth: SpotifyAuthClient,
+    pub auth: SpotifyAuthClient,
 }
 
 impl SpotifyApiHandler {

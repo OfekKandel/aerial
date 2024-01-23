@@ -1,10 +1,10 @@
 use super::{
     spotify_client::{SpotifyClient, SpotifyError},
-    AuthError, MusicClient,
+    AuthError, MusicClient, SpotifyAuthClient,
 };
 use crate::{
     modules::Module,
-    utils::{cache::Cache, Config},
+    utils::{cache::Cache, config::SpotifyConfig, Config},
 };
 use clap::{Args, Subcommand};
 use std::fmt::Display;
@@ -26,35 +26,48 @@ pub enum MusicCommands {
     Next,
     /// Go to the previous track
     Prev,
+    /// Initialize authentication to Spotify
+    Auth,
+    /// Remove authentication to Spotify
+    Unauth,
 }
 
 #[derive(Error, Debug)]
 pub enum MusicError {
     #[error("No configuration for Spotify found in the config file")]
     MissingConfig,
-    #[error("Failed to retrieve token for API requests: {0}")]
-    FailedInitialAuth(AuthError),
     #[error("Failed to perform action: {0}")]
     FailedAction(SpotifyError),
+    #[error("Failed to authenticate to API: {0}")]
+    FailedAuth(AuthError),
 }
 
 pub struct Music {}
+
+impl Music {
+    fn generate_client(config: &SpotifyConfig, cache: &mut Cache) -> Result<SpotifyClient, MusicError> {
+        Ok(SpotifyClient::new(config, cache).map_err(MusicError::FailedAuth)?)
+    }
+}
 
 impl Module for Music {
     type Args = MusicArgs;
     type Error = MusicError;
 
     fn run(args: &Self::Args, config: &Config, cache: &mut Cache) -> Result<(), Self::Error> {
-        let spotify_config = &config.modules.spotify.as_ref().ok_or(MusicError::MissingConfig)?;
-        let client = SpotifyClient::new(spotify_config, cache).map_err(MusicError::FailedInitialAuth)?;
+        let spotify_config = config.modules.spotify.as_ref().ok_or(MusicError::MissingConfig)?;
 
         match args.command {
-            MusicCommands::Pause => client.pause(),
-            MusicCommands::Resume => client.resume(),
-            MusicCommands::Next => client.goto_next_track(),
-            MusicCommands::Prev => client.goto_prev_track(),
+            MusicCommands::Auth => {
+                SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
+                    .map_err(SpotifyError::FailedInitialAuth)
+            }
+            MusicCommands::Pause => Self::generate_client(&spotify_config, cache)?.pause().map(|_| ()),
+            MusicCommands::Resume => Self::generate_client(&spotify_config, cache)?.resume().map(|_| ()),
+            MusicCommands::Next => Self::generate_client(&spotify_config, cache)?.goto_next_track().map(|_| ()),
+            MusicCommands::Prev => Self::generate_client(&spotify_config, cache)?.goto_prev_track().map(|_| ()),
+            MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
         }
-        .map(|_| ())
         .map_err(MusicError::FailedAction)
     }
 }
