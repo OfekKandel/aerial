@@ -1,5 +1,7 @@
 use super::spotify_api_handler::SpotifyApiHandler;
-use super::spotify_api_spec::{GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, PlayingState, Resume};
+use super::spotify_api_spec::{
+    GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, PlayingState, Resume, SetShuffle, ShuffleState,
+};
 use super::{AuthError, InitialAuthError, MusicClient};
 use crate::utils::{api_handler::ApiHandler, config::SpotifyConfig, http::ResponseError, Cache};
 use thiserror::Error;
@@ -51,6 +53,15 @@ impl MusicClient for SpotifyClient {
     fn goto_prev_track(&self) -> Result<(), Self::Error> {
         self.verify_active_device()?;
         self.api_handler.make_request(&GotoPrevTrack).map_err(SpotifyError::ApiRequestError)?;
+        Ok(())
+    }
+
+    fn set_shuffle_state(&self, state: &ShuffleState) -> Result<(), Self::Error> {
+        let shuffle = state.into_bool();
+        self.verify_active_device()?;
+        self.api_handler
+            .make_request(&SetShuffle { state: shuffle })
+            .map_err(SpotifyError::ApiRequestError)?;
         Ok(())
     }
 

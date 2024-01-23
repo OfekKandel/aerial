@@ -1,4 +1,5 @@
 use super::{
+    spotify_api_spec::ShuffleState,
     spotify_client::{SpotifyClient, SpotifyError},
     AuthError, MusicClient, SpotifyAuthClient,
 };
@@ -30,6 +31,8 @@ pub enum MusicCommands {
     Prev,
     /// Print information about the current track
     CurrTrack,
+    /// Sets the shuffle state to the given parameter
+    SetShuffle { state: ShuffleState },
     /// Initialize authentication to Spotify
     Auth,
     /// Remove authentication to Spotify
@@ -73,6 +76,7 @@ impl Module for Music {
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
             MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_curr_track(),
+            MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
         }
         .map_err(MusicError::FailedAction)
     }
