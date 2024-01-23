@@ -2,8 +2,10 @@ use crate::impl_endpoint;
 use crate::utils::api_spec::NoResponse;
 use crate::utils::ApiRequest;
 use crate::utils::ApiRequestSpec;
+use clap::ValueEnum;
 use reqwest::Method;
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::fmt::Display;
 
 pub struct Pause;
@@ -17,6 +19,36 @@ impl_endpoint!(GotoNextTrack, Method::POST, "me/player/next", NoResponse);
 
 pub struct GotoPrevTrack;
 impl_endpoint!(GotoPrevTrack, Method::POST, "me/player/previous", NoResponse);
+
+pub struct SetShuffle {
+    pub state: bool,
+}
+
+impl ApiRequestSpec for SetShuffle {
+    type Resposne = NoResponse;
+    fn request(&self) -> ApiRequest {
+        ApiRequest::basic_with_form(
+            Method::PUT,
+            "me/player/shuffle",
+            Some(HashMap::from([("state".into(), self.state.to_string())])),
+        )
+    }
+}
+
+#[derive(Clone, ValueEnum, Copy)]
+pub enum ShuffleState {
+    On,
+    Off,
+}
+
+impl ShuffleState {
+    pub fn into_bool(&self) -> bool {
+        match self {
+            ShuffleState::On => true,
+            ShuffleState::Off => false,
+        }
+    }
+}
 
 pub struct GetPlaybackState;
 type PlaybackResponse = Option<PlaybackState>;

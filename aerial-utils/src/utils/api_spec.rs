@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use reqwest::{blocking::RequestBuilder, header::HeaderMap, Method};
 use serde::{de::DeserializeOwned, Deserialize};
 
@@ -8,10 +10,10 @@ pub trait ApiRequestSpec {
     fn build(&self, api_endpoint: &str) -> RequestBuilder {
         let request = self.request();
         let endpoint = format!("{}/{}", api_endpoint, request.endpoint);
+        let url = reqwest::Url::parse_with_params(endpoint.as_str(), request.params.unwrap_or_default()).unwrap();
         reqwest::blocking::Client::new()
-            .request(request.method, endpoint)
+            .request(request.method, url)
             .headers(request.headers.unwrap_or(HeaderMap::new()))
-            .form(&request.form.unwrap_or(Vec::new()))
     }
 }
 
@@ -19,16 +21,20 @@ pub struct ApiRequest {
     pub method: Method,
     pub endpoint: String,
     pub headers: Option<HeaderMap>,
-    pub form: Option<Vec<(String, String)>>,
+    pub params: Option<HashMap<String, String>>,
 }
 
 impl ApiRequest {
     pub fn basic(method: Method, endpoint: &str) -> Self {
+        Self::basic_with_form(method, endpoint, None)
+    }
+
+    pub fn basic_with_form(method: Method, endpoint: &str, form: Option<HashMap<String, String>>) -> Self {
         ApiRequest {
             method,
             endpoint: endpoint.into(),
             headers: None,
-            form: None,
+            params: form,
         }
     }
 }
