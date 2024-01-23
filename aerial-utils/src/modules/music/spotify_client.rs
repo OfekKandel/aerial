@@ -1,5 +1,5 @@
 use super::spotify_api_handler::SpotifyApiHandler;
-use super::spotify_api_spec::{GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, PlayingState, Resume};
+use super::spotify_api_spec::{GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, PlayingState, Resume};
 use super::{AuthError, InitialAuthError, MusicClient};
 use crate::utils::{api_handler::ApiHandler, api_spec::NoResponse, config::SpotifyConfig, http::ResponseError, Cache};
 use thiserror::Error;
@@ -41,6 +41,15 @@ impl MusicClient for SpotifyClient {
     fn goto_prev_track(&self) -> Result<NoResponse, Self::Error> {
         self.verify_active_device()?;
         self.api_handler.make_request(&GotoPrevTrack).map_err(SpotifyError::ApiRequestError)
+    }
+
+    fn print_curr_track(&self) -> Result<(), Self::Error> {
+        self.verify_active_device()?;
+        let curr_track = self.api_handler.make_request(&GetCurrentTrack).map_err(SpotifyError::ApiRequestError)?;
+        match curr_track.item {
+            Some(track) => Ok(println!("{}", track)),
+            None => Ok(println!("There's no track currently playing")),
+        }
     }
 }
 

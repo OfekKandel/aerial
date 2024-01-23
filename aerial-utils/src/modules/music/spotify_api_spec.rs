@@ -37,6 +37,41 @@ pub struct SpotifyDevice {
     pub device_type: String,
 }
 
+pub struct GetCurrentTrack;
+impl_endpoint!(GetCurrentTrack, Method::GET, "me/player/currently-playing", CurrentTrack);
+
+#[derive(Deserialize)]
+pub struct CurrentTrack {
+    pub item: Option<SpotifyTrack>,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifyTrack {
+    pub name: String,
+    pub album: SpotifyPartialAlbum,
+    pub artists: Vec<SpotifyPartialArtist>,
+}
+
+impl Display for SpotifyTrack {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name_line = format!("Name: {}", self.name);
+        let album_line = format!("Album: {}", self.album.name);
+        let artist_names: Vec<&str> = self.artists.iter().map(|artist| artist.name.as_str()).collect();
+        let artists_line = format!("Artist(s): {}", artist_names.join(", "));
+        write!(f, "{}", [name_line, album_line, artists_line].join("\n"))
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SpotifyPartialAlbum {
+    pub name: String,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifyPartialArtist {
+    pub name: String,
+}
+
 // Other types -------------------------------------------------
 #[derive(Debug, PartialEq)]
 pub enum PlayingState {
