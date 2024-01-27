@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use reqwest::{blocking::RequestBuilder, header::HeaderMap, Method};
 use serde::{de::DeserializeOwned, Deserialize};
 
@@ -41,6 +40,22 @@ impl ApiRequest {
 
 #[derive(Deserialize)]
 pub struct NoResponse {}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum OptionalResponse<T> {
+    Some(T),
+    None(NoResponse)
+}
+
+impl<T> From<OptionalResponse<T>> for Option<T> {
+    fn from(value: OptionalResponse<T>) -> Self {
+        match value {
+            OptionalResponse::Some(v) => Some(v),
+            OptionalResponse::None(_) => None,
+        }
+    }
+}
 
 #[macro_export]
 macro_rules! impl_endpoint {

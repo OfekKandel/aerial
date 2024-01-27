@@ -1,5 +1,6 @@
 use crate::impl_endpoint;
 use crate::utils::api_spec::NoResponse;
+use crate::utils::api_spec::OptionalResponse;
 use crate::utils::ApiRequest;
 use crate::utils::ApiRequestSpec;
 use clap::ValueEnum;
@@ -51,7 +52,7 @@ impl ShuffleState {
 }
 
 pub struct GetPlaybackState;
-type PlaybackResponse = Option<PlaybackState>;
+type PlaybackResponse = OptionalResponse<PlaybackState>;
 impl_endpoint!(GetPlaybackState, Method::GET, "me/player", PlaybackResponse);
 
 #[derive(Deserialize)]
