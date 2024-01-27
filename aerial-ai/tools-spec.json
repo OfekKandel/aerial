@@ -1,0 +1,38 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "music_pause",
+            "description": "Pause the currently playing music",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "music_resume",
+            "description": "Resume the currently playing music",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "music_curr-track",
+            "description": "Get the currently playing track",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    }
+]
