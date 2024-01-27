@@ -2,7 +2,7 @@ mod modules;
 mod utils;
 
 use clap::{Parser, Subcommand};
-use modules::{music::MusicArgs, Module, Music};
+use modules::{music::MusicArgs, print_subcommand_specs, Module, Music};
 use utils::{cache::Cache, Config};
 
 const CONFIG_PATH: &str = "./config.toml";
@@ -18,6 +18,8 @@ pub struct AerialUtilsArgs {
 enum Modules {
     /// The music module
     Music(MusicArgs),
+    /// Print ChatGPT command spesifications
+    CommandSpecs,
 }
 
 // TODO: Make this a normal error
@@ -26,6 +28,10 @@ fn run_module(module: Modules) -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::from_file(CONFIG_PATH)?;
     let res = match &module {
         Modules::Music(args) => Ok(Music::run(args, &config, &mut cache)?),
+        Modules::CommandSpecs => {
+            print_subcommand_specs();
+            Ok(())
+        },
     };
     // NOTE: Cache won't be changed if the operation failed, might be good because
     // running the same command twice shouldn't get a different result

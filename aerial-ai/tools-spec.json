@@ -1,38 +1,122 @@
 [
-    {
-        "type": "function",
-        "function": {
-            "name": "music_pause",
-            "description": "Pause the currently playing music",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "music_resume",
-            "description": "Resume the currently playing music",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "music_curr-track",
-            "description": "Get the currently playing track",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
+  {
+    "type": "function",
+    "function": {
+      "name": "music_toggle",
+      "description": "Pause the music if it's playing, resume it if it's paused",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_pause",
+      "description": "Pause the currently playing track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_resume",
+      "description": "Resume the currently playing track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_next",
+      "description": "Go to the next track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_prev",
+      "description": "Go to the previous track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_curr-track",
+      "description": "Print information about the current track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_set-shuffle",
+      "description": "Sets the shuffle state to the given parameter",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_auth",
+      "description": "Initialize authentication to Spotify",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_unauth",
+      "description": "Remove authentication to Spotify",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "command-specs",
+      "description": "Print ChatGPT command spesifications",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  }
 ]

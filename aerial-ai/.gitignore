@@ -1,8 +1,8 @@
-/venv/
-/aerial_utils
-/cache.toml
-/config.toml
-/config_ai.toml
+venv
+aerial-utils
+cache.toml
+config.toml
+config_ai.toml
 .DS_Store
-/.vscode
+.vscode
 !.vscode/launch.json
