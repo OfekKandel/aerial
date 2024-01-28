@@ -40,7 +40,7 @@ def handle_completion(message: ChatCompletionMessage, client: OpenAI, messages: 
     
     for tool_call in message.tool_calls:
         # TODO: Add logger for debugging
-        tool_response = handle_function(tool_call.function.name, json.loads(tool_call.function.arguments))
+        tool_response = handle_function(tool_call.function.name, json.loads(tool_call.function.arguments), tools)
         messages.append({
             "tool_call_id": tool_call.id,
             "role": "tool",
@@ -50,8 +50,15 @@ def handle_completion(message: ChatCompletionMessage, client: OpenAI, messages: 
     completion = make_completion(client, messages, tools)
     return handle_completion(completion, client, messages, tools)
 
-def handle_function(name: str, arguments: dict):
-    commands = ['./aerial-utils'] + name.split('_')
+def parse_arguments(arguments: dict, tools: list[dict], func_name: str) -> list[str]:
+    tool = next((tool for tool in tools if tool['function']['name'] == func_name))
+    res = []
+    for name, data in tool['function']['parameters']['properties'].items():
+        res.insert(data['index'], arguments[name])
+    return res
+
+def handle_function(name: str, arguments: dict, tools: list[dict]):
+    commands = ['./aerial-utils'] + name.split('_') + parse_arguments(arguments, tools, name)
     process =  subprocess.run(commands, capture_output=True, text=True, cwd='.')
     # TODO: This is a weird approach because the aerial-utils error is in stderr and not stdout
     return process.stdout + process.stderr
