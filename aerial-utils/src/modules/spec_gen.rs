@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use clap::{Command, CommandFactory};
+use std::{clone, collections::HashMap};
+use clap::{builder::PossibleValue, Command, CommandFactory};
 use serde::Serialize;
 use crate::AerialUtilsArgs;
 
@@ -40,6 +40,19 @@ pub struct ChatGPTCommand {
 
 impl ChatGPTCommand {
     pub fn from_cmd(cmd: &Command, path: String) -> Self {
+        let arguments = cmd.get_arguments().filter(|i| !i.is_hide_set());
+
+        let mut properties: HashMap<String, ChatGPTFunctionProperty> = HashMap::new();
+        for arg in arguments.filter(|a| a.is_positional()) {
+            let name = arg.get_id().to_string();
+            let description = arg.get_help().map(|txt| txt.to_string());
+            let enum_values:Option<Vec<String>>= match arg.get_possible_values() {
+                vec if vec.is_empty() => None,
+                vec => Some(vec.into_iter().map(|v| v.get_name().into()).collect())
+            };
+            properties.insert(name, ChatGPTFunctionProperty { description, enum_values, index: arg.get_index() });
+        }
+
         Self {
             cmd_type: "function".into(),
             function: ChatGPTFunction {
@@ -47,8 +60,8 @@ impl ChatGPTCommand {
                 description: cmd.get_about().map(|txt| txt.to_string()).unwrap_or("No Description".into()),
                 parameters: ChatGPTFunctionParams {
                     param_type: "object".into(),
-                    properties: HashMap::new(),
-                    required: Vec::new(),
+                    required: properties.keys().map(|k| k.to_string()).collect(),
+                    properties,
                 }
             }
         }
@@ -72,7 +85,11 @@ pub struct ChatGPTFunctionParams {
 
 #[derive(Serialize)]
 pub struct ChatGPTFunctionProperty {
-    #[serde(rename = "type")]
-    property_type: String,
-    description: String,
+    index: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+
+    #[serde(rename = "enum")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    enum_values: Option<Vec<String>>,
 }

@@ -32,7 +32,10 @@ pub enum MusicCommands {
     /// Print information about the current track
     CurrTrack,
     /// Sets the shuffle state to the given parameter
-    SetShuffle { state: ShuffleState },
+    SetShuffle {
+        /// Weather to turn shuffle on or off
+        state: ShuffleState
+    },
     /// Initialize authentication to Spotify
     Auth,
     /// Remove authentication to Spotify
