@@ -78,8 +78,19 @@
       "description": "Sets the shuffle state to the given parameter",
       "parameters": {
         "type": "object",
-        "properties": {},
-        "required": []
+        "properties": {
+          "state": {
+            "index": 1,
+            "description": "Weather to turn shuffle on or off",
+            "enum": [
+              "on",
+              "off"
+            ]
+          }
+        },
+        "required": [
+          "state"
+        ]
       }
     }
   },
