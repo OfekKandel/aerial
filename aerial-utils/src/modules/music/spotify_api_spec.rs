@@ -1,4 +1,5 @@
 use crate::impl_endpoint;
+use crate::utils::api_spec::NoBody;
 use crate::utils::api_spec::NoResponse;
 use crate::utils::api_spec::OptionalResponse;
 use crate::utils::ApiRequest;
@@ -6,6 +7,7 @@ use crate::utils::ApiRequestSpec;
 use clap::ValueEnum;
 use reqwest::Method;
 use serde::Deserialize;
+use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Display;
 
@@ -14,6 +16,24 @@ impl_endpoint!(Pause, Method::PUT, "me/player/pause", NoResponse);
 
 pub struct Resume;
 impl_endpoint!(Resume, Method::PUT, "me/player/play", NoResponse);
+
+pub struct PlayTrack {
+    pub id: String,
+}
+
+impl ApiRequestSpec for PlayTrack {
+    type Resposne = NoResponse;
+    type Body = PlayTrackBody;
+    fn request(&self) -> ApiRequest<Self::Body> {
+        let track_uri = format!("spotify:track:{}", self.id);
+        ApiRequest::basic_with_body(Method::PUT, "me/player/play", PlayTrackBody { uris: vec![track_uri] })
+    }
+}
+
+#[derive(Serialize)]
+pub struct PlayTrackBody {
+    uris: Vec<String>,
+}
 
 pub struct GotoNextTrack;
 impl_endpoint!(GotoNextTrack, Method::POST, "me/player/next", NoResponse);
@@ -27,8 +47,9 @@ pub struct SetShuffle {
 
 impl ApiRequestSpec for SetShuffle {
     type Resposne = NoResponse;
-    fn request(&self) -> ApiRequest {
-        ApiRequest::basic_with_form(
+    type Body = NoBody;
+    fn request(&self) -> ApiRequest<Self::Body> {
+        ApiRequest::basic_with_params(
             Method::PUT,
             "me/player/shuffle",
             Some(HashMap::from([("state".into(), self.state.to_string())])),

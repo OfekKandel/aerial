@@ -1,39 +1,59 @@
-use std::collections::HashMap;
 use reqwest::{blocking::RequestBuilder, header::HeaderMap, Method};
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::collections::HashMap;
 
 pub trait ApiRequestSpec {
     type Resposne: DeserializeOwned;
-    fn request(&self) -> ApiRequest;
+    type Body: Serialize + Sized;
+    fn request(&self) -> ApiRequest<Self::Body>;
 
     fn build(&self, api_endpoint: &str) -> RequestBuilder {
         let request = self.request();
         let endpoint = format!("{}/{}", api_endpoint, request.endpoint);
+        // TODO: Remove these unwraps
         let url = reqwest::Url::parse_with_params(endpoint.as_str(), request.params.unwrap_or_default()).unwrap();
-        reqwest::blocking::Client::new()
+
+        let mut req = reqwest::blocking::Client::new()
             .request(request.method, url)
-            .headers(request.headers.unwrap_or(HeaderMap::new()))
+            .headers(request.headers.unwrap_or(HeaderMap::new()));
+
+        if let Some(body) = request.body {
+            req = req.body(serde_json::to_string_pretty(&body).unwrap());
+        }
+        return req;
     }
 }
 
-pub struct ApiRequest {
+pub struct ApiRequest<T: Serialize + Sized> {
     pub method: Method,
     pub endpoint: String,
     pub headers: Option<HeaderMap>,
     pub params: Option<HashMap<String, String>>,
+    pub body: Option<T>,
 }
 
-impl ApiRequest {
+impl<T: Serialize + Sized> ApiRequest<T> {
     pub fn basic(method: Method, endpoint: &str) -> Self {
-        Self::basic_with_form(method, endpoint, None)
+        Self::basic_with_params(method, endpoint, None)
     }
 
-    pub fn basic_with_form(method: Method, endpoint: &str, form: Option<HashMap<String, String>>) -> Self {
+    pub fn basic_with_params(method: Method, endpoint: &str, params: Option<HashMap<String, String>>) -> Self {
         ApiRequest {
             method,
             endpoint: endpoint.into(),
             headers: None,
-            params: form,
+            params,
+            body: None,
+        }
+    }
+
+    pub fn basic_with_body(method: Method, endpoint: &str, body: T) -> Self {
+        ApiRequest {
+            method,
+            endpoint: endpoint.into(),
+            headers: None,
+            params: None,
+            body: Some(body),
         }
     }
 }
@@ -45,7 +65,7 @@ pub struct NoResponse {}
 #[serde(untagged)]
 pub enum OptionalResponse<T> {
     Some(T),
-    None(NoResponse)
+    None(NoResponse),
 }
 
 impl<T> From<OptionalResponse<T>> for Option<T> {
@@ -57,13 +77,17 @@ impl<T> From<OptionalResponse<T>> for Option<T> {
     }
 }
 
+#[derive(Serialize)]
+pub struct NoBody {}
+
 #[macro_export]
 macro_rules! impl_endpoint {
     ($spec:ident, $method:path, $endpoint:expr, $response:ident) => {
         impl ApiRequestSpec for $spec {
             type Resposne = $response;
+            type Body = NoBody;
 
-            fn request(&self) -> ApiRequest {
+            fn request(&self) -> ApiRequest<Self::Body> {
                 ApiRequest::basic($method, $endpoint)
             }
         }

@@ -25,6 +25,11 @@ pub enum MusicCommands {
     Pause,
     /// Resume the currently playing track
     Resume,
+    /// Play a Spotify track
+    Play {
+        /// The ID of the track to play
+        track_id: String,
+    },
     /// Go to the next track
     Next,
     /// Go to the previous track
@@ -34,7 +39,7 @@ pub enum MusicCommands {
     /// Sets the shuffle state to the given parameter
     SetShuffle {
         /// Weather to turn shuffle on or off
-        state: ShuffleState
+        state: ShuffleState,
     },
     /// Initialize authentication to Spotify
     Auth,
@@ -64,9 +69,10 @@ impl Module for Music {
     type Args = MusicArgs;
     type Error = MusicError;
 
-    fn run(args: &Self::Args, config: &Config, cache: &mut Cache) -> Result<(), Self::Error> {
+    fn run(args: Self::Args, config: &Config, cache: &mut Cache) -> Result<(), Self::Error> {
         let spotify_config = config.modules.spotify.as_ref().ok_or(MusicError::MissingConfig)?;
 
+        // TODO: Remove all of these generate_client calls
         match args.command {
             MusicCommands::Auth => {
                 SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
@@ -75,6 +81,7 @@ impl Module for Music {
             MusicCommands::Toggle => Self::generate_client(spotify_config, cache)?.toggle(),
             MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause(),
             MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume(),
+            MusicCommands::Play { track_id } => Self::generate_client(spotify_config, cache)?.play_track(track_id),
             MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
