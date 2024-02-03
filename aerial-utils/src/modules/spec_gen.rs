@@ -1,8 +1,7 @@
-use std::{clone, collections::HashMap};
-use clap::{builder::PossibleValue, Command, CommandFactory};
-use serde::Serialize;
 use crate::AerialUtilsArgs;
-
+use clap::{Command, CommandFactory};
+use serde::Serialize;
+use std::collections::HashMap;
 
 pub fn print_subcommand_specs() {
     let mut cmd = AerialUtilsArgs::command();
@@ -18,7 +17,7 @@ fn print_chatgpt_subcommands(cmd: &Command) {
 fn get_chatgpt_subcommands(cmd: &Command, prefix: &str) -> Vec<ChatGPTCommand> {
     let children_prefix = match cmd.get_name() {
         "aerial-utils" => "".into(),
-        _ => format!("{}{}_", prefix, cmd.get_name())
+        _ => format!("{}{}_", prefix, cmd.get_name()),
     };
     let mut subcommands = Vec::new();
     for subcommand in cmd.get_subcommands().filter(|s| s.get_name() != "help") {
@@ -29,13 +28,12 @@ fn get_chatgpt_subcommands(cmd: &Command, prefix: &str) -> Vec<ChatGPTCommand> {
         }
     }
     subcommands
-
 }
 #[derive(Serialize)]
 pub struct ChatGPTCommand {
     #[serde(rename = "type")]
     cmd_type: String,
-    function: ChatGPTFunction
+    function: ChatGPTFunction,
 }
 
 impl ChatGPTCommand {
@@ -46,11 +44,18 @@ impl ChatGPTCommand {
         for arg in arguments.filter(|a| a.is_positional()) {
             let name = arg.get_id().to_string();
             let description = arg.get_help().map(|txt| txt.to_string());
-            let enum_values:Option<Vec<String>>= match arg.get_possible_values() {
+            let enum_values: Option<Vec<String>> = match arg.get_possible_values() {
                 vec if vec.is_empty() => None,
-                vec => Some(vec.into_iter().map(|v| v.get_name().into()).collect())
+                vec => Some(vec.into_iter().map(|v| v.get_name().into()).collect()),
             };
-            properties.insert(name, ChatGPTFunctionProperty { description, enum_values, index: arg.get_index() });
+            properties.insert(
+                name,
+                ChatGPTFunctionProperty {
+                    description,
+                    enum_values,
+                    index: arg.get_index(),
+                },
+            );
         }
 
         Self {
@@ -62,8 +67,8 @@ impl ChatGPTCommand {
                     param_type: "object".into(),
                     required: properties.keys().map(|k| k.to_string()).collect(),
                     properties,
-                }
-            }
+                },
+            },
         }
     }
 }
@@ -72,7 +77,7 @@ impl ChatGPTCommand {
 pub struct ChatGPTFunction {
     name: String,
     description: String,
-    parameters: ChatGPTFunctionParams
+    parameters: ChatGPTFunctionParams,
 }
 
 #[derive(Serialize)]
@@ -93,3 +98,4 @@ pub struct ChatGPTFunctionProperty {
     #[serde(skip_serializing_if = "Option::is_none")]
     enum_values: Option<Vec<String>>,
 }
+

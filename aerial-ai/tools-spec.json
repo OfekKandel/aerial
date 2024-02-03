@@ -38,6 +38,25 @@
   {
     "type": "function",
     "function": {
+      "name": "music_play",
+      "description": "Play a Spotify track",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "track_id": {
+            "index": 1,
+            "description": "The ID of the track to play"
+          }
+        },
+        "required": [
+          "track_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "music_next",
       "description": "Go to the next track",
       "parameters": {

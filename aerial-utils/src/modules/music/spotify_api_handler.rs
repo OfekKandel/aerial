@@ -7,7 +7,7 @@ use crate::utils::{
     ApiRequestSpec, Cache,
 };
 use reqwest::header::{CONTENT_LENGTH, CONTENT_TYPE};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
 
 const API_ENDPOINT: &str = "https://api.spotify.com/v1";
 
@@ -24,7 +24,7 @@ impl SpotifyApiHandler {
 }
 
 impl ApiHandler for SpotifyApiHandler {
-    fn make_request<T: DeserializeOwned>(&self, spec: &dyn ApiRequestSpec<Resposne = T>) -> Result<T, ResponseError> {
+    fn make_request<B: Serialize, R: DeserializeOwned>(&self, spec: &dyn ApiRequestSpec<Body = B, Resposne = R>) -> Result<R, ResponseError> {
         let request = spec
             .build(API_ENDPOINT)
             .auth(&self.auth)

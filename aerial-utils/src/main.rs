@@ -26,12 +26,12 @@ enum Modules {
 fn run_module(module: Modules) -> Result<(), Box<dyn std::error::Error>> {
     let mut cache = Cache::from_file("cache.toml")?;
     let config = Config::from_file(CONFIG_PATH)?;
-    let res = match &module {
+    let res = match module {
         Modules::Music(args) => Ok(Music::run(args, &config, &mut cache)?),
         Modules::CommandSpecs => {
             print_subcommand_specs();
             Ok(())
-        },
+        }
     };
     // NOTE: Cache won't be changed if the operation failed, might be good because
     // running the same command twice shouldn't get a different result
