@@ -17,19 +17,39 @@ impl_endpoint!(Pause, Method::PUT, "me/player/pause", NoResponse);
 pub struct Resume;
 impl_endpoint!(Resume, Method::PUT, "me/player/play", NoResponse);
 
-pub struct PlayTrack {
-    pub id: String,
+pub enum Play {
+    Track { id: String },
+    Context { uri: String, track: Option<String> },
 }
-impl_endpoint!(PlayTrack, Method::PUT, "me/player/play", playtrack_body => PlayTrackBody, NoResponse);
+impl_endpoint!(Play, Method::PUT, "me/player/play", playtrack_body => PlayBody, NoResponse);
 
-
+#[derive(Serialize, Default)]
+pub struct PlayBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    uris: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    context_uri: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    offset: Option<PlayBodyOffset>,
+}
 #[derive(Serialize)]
-pub struct PlayTrackBody {
-    uris: Vec<String>,
+pub struct PlayBodyOffset {
+    uri: String,
 }
-fn playtrack_body(args: &PlayTrack) -> PlayTrackBody {
-    let track_uri = format!("spotify:track:{}", args.id);
-    PlayTrackBody { uris: vec![track_uri] }
+fn playtrack_body(args: &Play) -> PlayBody {
+    match args {
+        Play::Track { id } => PlayBody {
+            uris: Some(vec![format!("spotify:track:{}", id)]),
+            ..Default::default()
+        },
+        Play::Context { uri, track } => PlayBody {
+            context_uri: Some(format!("spotify:{}", uri)),
+            offset: track.as_ref().map(|id| PlayBodyOffset {
+                uri: format!("spotify:track:{}", id),
+            }),
+            ..Default::default()
+        },
+    }
 }
 
 pub struct GotoNextTrack;
