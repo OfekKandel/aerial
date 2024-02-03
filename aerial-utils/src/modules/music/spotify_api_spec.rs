@@ -20,19 +20,16 @@ impl_endpoint!(Resume, Method::PUT, "me/player/play", NoResponse);
 pub struct PlayTrack {
     pub id: String,
 }
+impl_endpoint!(PlayTrack, Method::PUT, "me/player/play", playtrack_body => PlayTrackBody, NoResponse);
 
-impl ApiRequestSpec for PlayTrack {
-    type Resposne = NoResponse;
-    type Body = PlayTrackBody;
-    fn request(&self) -> ApiRequest<Self::Body> {
-        let track_uri = format!("spotify:track:{}", self.id);
-        ApiRequest::basic_with_body(Method::PUT, "me/player/play", PlayTrackBody { uris: vec![track_uri] })
-    }
-}
 
 #[derive(Serialize)]
 pub struct PlayTrackBody {
     uris: Vec<String>,
+}
+fn playtrack_body(args: &PlayTrack) -> PlayTrackBody {
+    let track_uri = format!("spotify:track:{}", args.id);
+    PlayTrackBody { uris: vec![track_uri] }
 }
 
 pub struct GotoNextTrack;
@@ -45,16 +42,9 @@ pub struct SetShuffle {
     pub state: bool,
 }
 
-impl ApiRequestSpec for SetShuffle {
-    type Resposne = NoResponse;
-    type Body = NoBody;
-    fn request(&self) -> ApiRequest<Self::Body> {
-        ApiRequest::basic_with_params(
-            Method::PUT,
-            "me/player/shuffle",
-            Some(HashMap::from([("state".into(), self.state.to_string())])),
-        )
-    }
+impl_endpoint!(SetShuffle, Method::PUT, "me/player/shuffle" => setshuffle_params, NoResponse);
+fn setshuffle_params(args: &SetShuffle) -> HashMap<String, String> {
+    [("state".into(), args.state.to_string())].into()
 }
 
 #[derive(Clone, ValueEnum, Copy)]

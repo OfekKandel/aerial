@@ -82,6 +82,7 @@ pub struct NoBody {}
 
 #[macro_export]
 macro_rules! impl_endpoint {
+    // Implement a request without body or params
     ($spec:ident, $method:path, $endpoint:expr, $response:ident) => {
         impl ApiRequestSpec for $spec {
             type Resposne = $response;
@@ -89,6 +90,30 @@ macro_rules! impl_endpoint {
 
             fn request(&self) -> ApiRequest<Self::Body> {
                 ApiRequest::basic($method, $endpoint)
+            }
+        }
+    };
+    // Implement a request with params
+    ($spec:ident, $method:path, $endpoint:expr => $params_func:ident, $response:ident) => {
+        impl ApiRequestSpec for $spec {
+            type Resposne = $response;
+            type Body = NoBody;
+
+            fn request(&self) -> ApiRequest<Self::Body> {
+                let params = $params_func(self);
+                ApiRequest::basic_with_params($method, $endpoint, Some(params))
+            }
+        }
+    };
+    // Implement a request with a body
+    ($spec:ident, $method:path, $endpoint:expr, $body_func:ident => $body:ident, $response:ident) => {
+        impl ApiRequestSpec for $spec {
+            type Resposne = $response;
+            type Body = $body;
+
+            fn request(&self) -> ApiRequest<Self::Body> {
+                let body = $body_func(self);
+                ApiRequest::basic_with_body($method, $endpoint, body)
             }
         }
     };
