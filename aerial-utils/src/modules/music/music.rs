@@ -29,6 +29,8 @@ pub enum MusicCommands {
     Play {
         /// The ID of the track to play
         track_id: String,
+        #[arg(short, long)]
+        context: Option<String>,
     },
     /// Go to the next track
     Next,
@@ -81,7 +83,7 @@ impl Module for Music {
             MusicCommands::Toggle => Self::generate_client(spotify_config, cache)?.toggle(),
             MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause(),
             MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume(),
-            MusicCommands::Play { track_id } => Self::generate_client(spotify_config, cache)?.play_track(track_id),
+            MusicCommands::Play { track_id, context } => Self::generate_client(spotify_config, cache)?.play_track(track_id, context),
             MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
