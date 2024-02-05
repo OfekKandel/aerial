@@ -1,6 +1,8 @@
 use super::{
-    spotify_api_spec::ShuffleState,
-    spotify_client::{SpotifyClient, SpotifyError},
+    spotify::{
+        spotify_api_spec::ShuffleState,
+        spotify_client::{SpotifyClient, SpotifyError},
+    },
     AuthError, MusicClient, SpotifyAuthClient,
 };
 use crate::{

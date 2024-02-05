@@ -1,4 +1,4 @@
-use super::{AuthError, SpotifyAuthClient};
+use super::spotify_auth::{AuthError, SpotifyAuthClient};
 use crate::utils::{
     api_handler::ApiHandler,
     auth_client::AddAuthExt,

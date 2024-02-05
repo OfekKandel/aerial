@@ -1,9 +1,11 @@
-use super::Token;
-use crate::utils::{
-    cache::SpotifyCache,
-    http::{ExtractFromResposneExt, ResponseError, ValidateResponseExt},
-    server::{read_localhost_request, TcpServerError},
-    AuthClient, Cache,
+use crate::{
+    modules::music::Token,
+    utils::{
+        cache::SpotifyCache,
+        http::{ExtractFromResposneExt, ResponseError, ValidateResponseExt},
+        server::{read_localhost_request, TcpServerError},
+        AuthClient, Cache,
+    },
 };
 use base64::{engine::general_purpose::STANDARD as base64_engine, Engine as _};
 use reqwest::{

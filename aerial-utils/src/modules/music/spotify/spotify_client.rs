@@ -2,7 +2,8 @@ use super::spotify_api_handler::SpotifyApiHandler;
 use super::spotify_api_spec::{
     GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, SetShuffle, ShuffleState,
 };
-use super::{AuthError, InitialAuthError, MusicClient};
+use super::spotify_auth::{AuthError, InitialAuthError};
+use crate::modules::music::MusicClient;
 use crate::utils::{api_handler::ApiHandler, config::SpotifyConfig, http::ResponseError, Cache};
 use thiserror::Error;
 
