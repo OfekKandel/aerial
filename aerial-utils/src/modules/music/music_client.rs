@@ -1,4 +1,4 @@
-use super::spotify_api_spec::ShuffleState;
+use super::spotify::spotify_api_spec::ShuffleState;
 use std::error::Error;
 
 pub trait MusicClient {
