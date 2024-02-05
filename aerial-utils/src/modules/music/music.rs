@@ -28,12 +28,7 @@ pub enum MusicCommands {
     /// Resume the currently playing track
     Resume,
     /// Play a Spotify track
-    Play {
-        /// The ID of the track to play
-        track_id: String,
-        #[arg(short, long)]
-        context: Option<String>,
-    },
+    Play(PlayArgs),
     /// Go to the next track
     Next,
     /// Go to the previous track
@@ -49,6 +44,17 @@ pub enum MusicCommands {
     Auth,
     /// Remove authentication to Spotify
     Unauth,
+}
+
+#[derive(Args)]
+#[group(required = true, multiple = true)]
+pub struct PlayArgs {
+    /// The spotify track id to play
+    #[arg(short, long)]
+    track: Option<String>,
+    /// The spotify context to play in, formated as album:album_id or playlist:playlist_id
+    #[arg(short, long)]
+    context: Option<String>,
 }
 
 #[derive(Error, Debug)]
@@ -85,7 +91,7 @@ impl Module for Music {
             MusicCommands::Toggle => Self::generate_client(spotify_config, cache)?.toggle(),
             MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause(),
             MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume(),
-            MusicCommands::Play { track_id, context } => Self::generate_client(spotify_config, cache)?.play_track(track_id, context),
+            MusicCommands::Play(args) => Self::generate_client(spotify_config, cache)?.play(args.track, args.context),
             MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),

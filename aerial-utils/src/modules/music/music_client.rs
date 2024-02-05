@@ -7,7 +7,7 @@ pub trait MusicClient {
     fn toggle(&self) -> Result<(), Self::Error>;
     fn pause(&self) -> Result<(), Self::Error>;
     fn resume(&self) -> Result<(), Self::Error>;
-    fn play_track(&self, track_id: String, context: Option<String>) -> Result<(), Self::Error>;
+    fn play(&self, track_id: Option<String>, context: Option<String>) -> Result<(), Self::Error>;
     fn goto_next_track(&self) -> Result<(), Self::Error>;
     fn goto_prev_track(&self) -> Result<(), Self::Error>;
     fn set_shuffle_state(&self, state: &ShuffleState) -> Result<(), Self::Error>;
