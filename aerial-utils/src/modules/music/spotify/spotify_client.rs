@@ -45,14 +45,15 @@ impl MusicClient for SpotifyClient {
         Ok(())
     }
 
-    fn play_track(&self, id: String, context: Option<String>) -> Result<(), Self::Error> {
+    fn play(&self, id: Option<String>, context: Option<String>) -> Result<(), Self::Error> {
         self.verify_active_device()?;
-        let request = match context {
-            Some(context) => Play::Context {
-                uri: context,
-                track: Some(id),
-            },
-            None => Play::Track { id },
+        let request = match (context, id) {
+            (Some(context), id) => Play::Context { uri: context, track: id },
+            (None, Some(id)) => Play::Track { id },
+            _ => {
+                eprintln!("WARNING: Play called without id or context to play, this is a code problem\n");
+                return Ok(());
+            }
         };
 
         self.api_handler.make_request(&request).map_err(SpotifyError::ApiRequestError)?;
