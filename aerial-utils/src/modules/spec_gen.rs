@@ -41,13 +41,20 @@ impl ChatGPTCommand {
         let arguments = cmd.get_arguments().filter(|i| !i.is_hide_set());
 
         let mut properties: HashMap<String, ChatGPTFunctionProperty> = HashMap::new();
-        for arg in arguments.filter(|a| a.is_positional()) {
+        let mut req_properites: Vec<String> = Vec::new();
+
+        for arg in arguments.filter(|a| a.get_id() != "help") {
             let name = arg.get_id().to_string();
             let description = arg.get_help().map(|txt| txt.to_string());
             let enum_values: Option<Vec<String>> = match arg.get_possible_values() {
                 vec if vec.is_empty() => None,
                 vec => Some(vec.into_iter().map(|v| v.get_name().into()).collect()),
             };
+
+            if arg.is_required_set() {
+                req_properites.push(name.clone());
+            }
+
             properties.insert(
                 name,
                 ChatGPTFunctionProperty {
@@ -65,7 +72,7 @@ impl ChatGPTCommand {
                 description: cmd.get_about().map(|txt| txt.to_string()).unwrap_or("No Description".into()),
                 parameters: ChatGPTFunctionParams {
                     param_type: "object".into(),
-                    required: properties.keys().map(|k| k.to_string()).collect(),
+                    required: req_properites,
                     properties,
                 },
             },
@@ -90,6 +97,7 @@ pub struct ChatGPTFunctionParams {
 
 #[derive(Serialize)]
 pub struct ChatGPTFunctionProperty {
+    #[serde(skip_serializing_if = "Option::is_none")]
     index: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
@@ -98,4 +106,3 @@ pub struct ChatGPTFunctionProperty {
     #[serde(skip_serializing_if = "Option::is_none")]
     enum_values: Option<Vec<String>>,
 }
-
