@@ -43,14 +43,14 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "track_id": {
-            "index": 1,
-            "description": "The ID of the track to play"
+          "track": {
+            "description": "The spotify track id to play"
+          },
+          "context": {
+            "description": "The spotify context to play in, formated as album:album_id or playlist:playlist_id"
           }
         },
-        "required": [
-          "track_id"
-        ]
+        "required": []
       }
     }
   },
