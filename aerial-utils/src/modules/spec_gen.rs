@@ -3,6 +3,8 @@ use clap::{Command, CommandFactory};
 use serde::Serialize;
 use std::collections::HashMap;
 
+// TODO: Theoretically this whole thing should be a part of the build process
+
 pub fn print_subcommand_specs() {
     let mut cmd = AerialUtilsArgs::command();
     cmd.build();

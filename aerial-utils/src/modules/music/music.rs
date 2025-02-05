@@ -95,7 +95,7 @@ impl Module for Music {
             MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
-            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_curr_track(),
+            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
             MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
         }
         .map_err(MusicError::FailedAction)

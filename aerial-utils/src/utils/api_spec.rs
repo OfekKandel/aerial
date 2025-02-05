@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub trait ApiRequestSpec {
     type Resposne: DeserializeOwned;
     type Body: Serialize + Sized;
+
     // TODO: Change this to take self instead of a reference
     fn request(&self) -> ApiRequest<Self::Body>;
 
