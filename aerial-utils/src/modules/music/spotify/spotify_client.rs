@@ -81,7 +81,7 @@ impl MusicClient for SpotifyClient {
         Ok(())
     }
 
-    fn print_curr_track(&self) -> Result<(), Self::Error> {
+    fn print_current_track(&self) -> Result<(), Self::Error> {
         self.verify_active_device()?;
         let curr_track = self.api_handler.make_request(&GetCurrentTrack).map_err(SpotifyError::ApiRequestError)?;
         match curr_track.item {

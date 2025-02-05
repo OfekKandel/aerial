@@ -18,7 +18,7 @@ pub struct AerialUtilsArgs {
 enum Modules {
     /// The music module
     Music(MusicArgs),
-    /// Print ChatGPT command spesifications
+    /// Print ChatGPT command specifications
     CommandSpecs,
 }
 
