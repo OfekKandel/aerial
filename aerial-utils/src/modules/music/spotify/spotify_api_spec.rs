@@ -7,9 +7,11 @@ use crate::utils::ApiRequestSpec;
 use clap::ValueEnum;
 use reqwest::Method;
 use serde::Deserialize;
+use serde::Deserializer;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::u8;
 
 pub struct Pause;
 impl_endpoint!(Pause, Method::PUT, "me/player/pause", NoResponse);
@@ -101,6 +103,92 @@ pub struct SpotifyDevice {
     pub device_type: String,
 }
 
+pub struct Search {
+    pub query: String,
+    pub search_type: Vec<SpotifySearchType>,
+}
+
+impl_endpoint!(Search, Method::GET, "search" => search_params, SpotifySearchResults);
+fn search_params(args: &Search) -> HashMap<String, String> {
+    [
+        ("q".into(), args.query.clone()),
+        (
+            "type".into(),
+            args.search_type.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(","),
+        ),
+    ]
+    .into()
+}
+
+#[derive(clap::ValueEnum, Default, Clone, Debug, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SpotifySearchType {
+    #[default]
+    Track,
+    Album,
+    Artist,
+    Playlist,
+}
+
+impl Display for SpotifySearchType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let text = match self {
+            SpotifySearchType::Track => "track",
+            SpotifySearchType::Album => "album",
+            SpotifySearchType::Artist => "artist",
+            SpotifySearchType::Playlist => "playlist",
+        };
+        write!(f, "{}", text)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySearchResults {
+    pub tracks: Option<SpotifySearchTracksResults>,
+    pub albums: Option<SpotifySearchAlbumsResults>,
+    pub artists: Option<SpotifySearchArtistsResults>,
+    pub playlists: Option<SpotifySearchPlaylistsResults>,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySearchTracksResults {
+    #[serde(alias = "total")]
+    pub tracks_num: u32,
+    #[serde(deserialize_with = "deserialize_vec_skip_null")]
+    pub items: Vec<SpotifyTrack>,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySearchAlbumsResults {
+    #[serde(alias = "total")]
+    pub tracks_num: u32,
+    #[serde(deserialize_with = "deserialize_vec_skip_null")]
+    pub items: Vec<SpotifySimplifiedAlbum>,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySearchArtistsResults {
+    #[serde(alias = "total")]
+    pub tracks_num: u32,
+    #[serde(deserialize_with = "deserialize_vec_skip_null")]
+    pub items: Vec<SpotifyArtist>,
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySearchPlaylistsResults {
+    #[serde(alias = "total")]
+    pub tracks_num: u32,
+    #[serde(deserialize_with = "deserialize_vec_skip_null")]
+    pub items: Vec<SpotifySimplifiedPlaylist>,
+}
+
+pub fn spotify_search_results_to_string<T: Display>(results: Option<Vec<T>>) -> String {
+    match results {
+        Some(items) => items.iter().map(ToString::to_string).collect::<Vec<_>>().join("\n\n"),
+        None => "No search results returned".into(),
+    }
+}
+
 pub struct GetCurrentTrack;
 impl_endpoint!(GetCurrentTrack, Method::GET, "me/player/currently-playing", CurrentTrack);
 
@@ -109,34 +197,51 @@ pub struct CurrentTrack {
     pub item: Option<SpotifyTrack>,
 }
 
+// Other types -------------------------------------------------
 #[derive(Deserialize)]
-pub struct SpotifyTrack {
+pub struct SpotifySimplifiedArtist {
     pub name: String,
-    pub album: SpotifyPartialAlbum,
-    pub artists: Vec<SpotifyPartialArtist>,
 }
 
-impl Display for SpotifyTrack {
+#[derive(Deserialize)]
+pub struct SpotifySimplifiedPlaylist {
+    pub name: String,
+    pub description: String,
+    pub id: String,
+    #[serde(alias = "public")]
+    pub is_public: bool,
+}
+
+impl Display for SpotifySimplifiedPlaylist {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let name_line = format!("Name: {}", self.name);
-        let album_line = format!("Album: {}", self.album.name);
-        let artist_names: Vec<&str> = self.artists.iter().map(|artist| artist.name.as_str()).collect();
-        let artists_line = format!("Artist(s): {}", artist_names.join(", "));
-        write!(f, "{}", [name_line, album_line, artists_line].join("\n"))
+        let lines = [
+            format!("Name: {}", self.name),
+            format!("Description: {}", self.description),
+            format!("ID: {}", self.id),
+            format!("Public: {}", if self.is_public { "Yes" } else { "No" }),
+        ];
+        write!(f, "{}", lines.join("\n"))
     }
 }
 
 #[derive(Deserialize)]
-pub struct SpotifyPartialAlbum {
+pub struct SpotifyArtist {
     pub name: String,
+    pub genres: Vec<String>,
+    pub id: String,
 }
 
-#[derive(Deserialize)]
-pub struct SpotifyPartialArtist {
-    pub name: String,
+impl Display for SpotifyArtist {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let lines = [
+            format!("Name: {}", self.name),
+            format!("Genres: {}", self.genres.join(", ")),
+            format!("ID: {}", self.id),
+        ];
+        write!(f, "{}", lines.join("\n"))
+    }
 }
 
-// Other types -------------------------------------------------
 #[derive(Debug, PartialEq)]
 pub enum PlayingState {
     Playing,
@@ -156,4 +261,62 @@ impl Display for PlayingState {
             PlayingState::Paused => write!(f, "paused"),
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct SpotifyTrack {
+    pub name: String,
+    pub album: SpotifySimplifiedAlbum,
+    pub artists: Vec<SpotifySimplifiedArtist>,
+    pub id: String,
+}
+
+impl Display for SpotifyTrack {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let artist_names: Vec<&str> = self.artists.iter().map(|artist| artist.name.as_str()).collect();
+        let lines = [
+            format!("Name: {}", self.name),
+            format!("Album: {} (ID = {})", self.album.name, self.album.id),
+            format!("Artist(s): {}", artist_names.join(", ")),
+            format!("ID: {}", self.id),
+        ];
+        write!(f, "{}", lines.join("\n"))
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SpotifySimplifiedAlbum {
+    pub name: String,
+    pub album_type: String, // TODO: Convert to Enum
+    pub total_tracks: u8,
+    pub artists: Vec<SpotifySimplifiedArtist>,
+    pub release_date: String,
+    pub release_date_precision: String,
+    pub id: String,
+}
+
+impl Display for SpotifySimplifiedAlbum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let artist_names: Vec<&str> = self.artists.iter().map(|artist| artist.name.as_str()).collect();
+        let lines = [
+            format!("Name: {}", self.name),
+            format!("Album: {}", self.album_type),
+            format!("Length: {} Tracks", self.total_tracks),
+            format!("Artist(s): {}", artist_names.join(", ")),
+            format!("Release Date: {}", self.release_date),
+            format!("ID: {}", self.id),
+        ];
+        write!(f, "{}", lines.join("\n"))
+    }
+}
+
+// Serde help functions
+// TODO: ORGANIZE
+fn deserialize_vec_skip_null<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    let opt_vec: Option<Vec<Option<T>>> = Deserialize::deserialize(deserializer)?;
+    Ok(opt_vec.unwrap_or_default().into_iter().flatten().collect())
 }

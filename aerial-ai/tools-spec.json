@@ -43,11 +43,11 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "track": {
-            "description": "The spotify track id to play"
-          },
           "context": {
             "description": "The spotify context to play in, formated as album:album_id or playlist:playlist_id"
+          },
+          "track": {
+            "description": "The spotify track id to play"
           }
         },
         "required": []
@@ -81,12 +81,28 @@
   {
     "type": "function",
     "function": {
-      "name": "music_curr-track",
-      "description": "Print information about the current track",
+      "name": "music_search",
+      "description": "Get a list of tracks for a given query",
       "parameters": {
         "type": "object",
-        "properties": {},
-        "required": []
+        "properties": {
+          "search-type": {
+            "description": "The type of results to be searched for",
+            "enum": [
+              "track",
+              "album",
+              "artist",
+              "playlist"
+            ]
+          },
+          "query": {
+            "index": 1,
+            "description": "The search query"
+          }
+        },
+        "required": [
+          "query"
+        ]
       }
     }
   },
@@ -110,6 +126,18 @@
         "required": [
           "state"
         ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "music_curr-track",
+      "description": "Print information about the current track",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
       }
     }
   },
@@ -141,7 +169,7 @@
     "type": "function",
     "function": {
       "name": "command-specs",
-      "description": "Print ChatGPT command spesifications",
+      "description": "Print ChatGPT command specifications",
       "parameters": {
         "type": "object",
         "properties": {},
