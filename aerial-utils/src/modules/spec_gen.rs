@@ -58,7 +58,7 @@ impl ChatGPTCommand {
             }
 
             properties.insert(
-                name,
+                name.replace("_", "-"),
                 ChatGPTFunctionProperty {
                     description,
                     enum_values,

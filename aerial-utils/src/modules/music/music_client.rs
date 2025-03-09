@@ -1,4 +1,4 @@
-use super::spotify::spotify_api_spec::ShuffleState;
+use super::spotify::spotify_api_spec::{ShuffleState, SpotifySearchType};
 use std::error::Error;
 
 pub trait MusicClient {
@@ -11,5 +11,6 @@ pub trait MusicClient {
     fn goto_next_track(&self) -> Result<(), Self::Error>;
     fn goto_prev_track(&self) -> Result<(), Self::Error>;
     fn set_shuffle_state(&self, state: &ShuffleState) -> Result<(), Self::Error>;
+    fn search(&self, query: String, search_type: SpotifySearchType) -> Result<(), Self::Error>;
     fn print_current_track(&self) -> Result<(), Self::Error>;
 }

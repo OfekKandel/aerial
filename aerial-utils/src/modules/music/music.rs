@@ -1,6 +1,6 @@
 use super::{
     spotify::{
-        spotify_api_spec::ShuffleState,
+        spotify_api_spec::{ShuffleState, SpotifySearchType},
         spotify_client::{SpotifyClient, SpotifyError},
     },
     AuthError, MusicClient, SpotifyAuthClient,
@@ -33,13 +33,21 @@ pub enum MusicCommands {
     Next,
     /// Go to the previous track
     Prev,
-    /// Print information about the current track
-    CurrTrack,
+    /// Get a list of tracks for a given query
+    Search {
+        /// The search query
+        query: String,
+        /// The type of results to be searched for
+        #[clap(short = 't', long, default_value_t, value_enum)]
+        search_type: SpotifySearchType
+    },
     /// Sets the shuffle state to the given parameter
     SetShuffle {
         /// Weather to turn shuffle on or off
         state: ShuffleState,
     },
+    /// Print information about the current track
+    CurrTrack,
     /// Initialize authentication to Spotify
     Auth,
     /// Remove authentication to Spotify
@@ -95,8 +103,9 @@ impl Module for Music {
             MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
-            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
             MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
+            MusicCommands::Search { query, search_type } => Self::generate_client(&spotify_config, cache)?.search(query.clone(), search_type),
+            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
         }
         .map_err(MusicError::FailedAction)
     }

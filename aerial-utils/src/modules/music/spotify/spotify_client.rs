@@ -1,8 +1,10 @@
 use super::spotify_api_handler::SpotifyApiHandler;
 use super::spotify_api_spec::{
-    GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, SetShuffle, ShuffleState,
+    GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, Search, SetShuffle,
+    ShuffleState, SpotifySearchType,
 };
 use super::spotify_auth::{AuthError, InitialAuthError};
+use crate::modules::music::spotify::spotify_api_spec::spotify_search_results_to_string;
 use crate::modules::music::MusicClient;
 use crate::utils::{api_handler::ApiHandler, config::SpotifyConfig, http::ResponseError, Cache};
 use thiserror::Error;
@@ -78,6 +80,26 @@ impl MusicClient for SpotifyClient {
         self.api_handler
             .make_request(&SetShuffle { state: shuffle })
             .map_err(SpotifyError::ApiRequestError)?;
+        Ok(())
+    }
+
+    fn search(&self, query: String, search_type: SpotifySearchType) -> Result<(), Self::Error> {
+        let search_results = self
+            .api_handler
+            .make_request(&Search {
+                query: query.clone(),
+                search_type: vec![search_type.clone()],
+            })
+            .map_err(SpotifyError::ApiRequestError)?;
+        println!(
+            "{}",
+            match search_type {
+                SpotifySearchType::Track => spotify_search_results_to_string(search_results.tracks.map(|i| i.items)),
+                SpotifySearchType::Album => spotify_search_results_to_string(search_results.albums.map(|i| i.items)),
+                SpotifySearchType::Artist => spotify_search_results_to_string(search_results.artists.map(|i| i.items)),
+                SpotifySearchType::Playlist => spotify_search_results_to_string(search_results.playlists.map(|i| i.items)),
+            }
+        );
         Ok(())
     }
 
