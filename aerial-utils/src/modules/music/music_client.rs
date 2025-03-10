@@ -12,5 +12,6 @@ pub trait MusicClient {
     fn goto_prev_track(&self) -> Result<(), Self::Error>;
     fn set_shuffle_state(&self, state: &ShuffleState) -> Result<(), Self::Error>;
     fn search(&self, query: String, search_type: SpotifySearchType) -> Result<(), Self::Error>;
+    fn save_track(&self, id: String) -> Result<(), Self::Error>;
     fn print_current_track(&self) -> Result<(), Self::Error>;
 }

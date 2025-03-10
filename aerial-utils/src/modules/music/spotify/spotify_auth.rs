@@ -21,7 +21,7 @@ use url::Url;
 
 const AUTH_ENDPOINT: &str = "https://accounts.spotify.com";
 const REDIRECT_PORT: u32 = 8888;
-const API_SCOPE: &str = "user-read-playback-state user-modify-playback-state";
+const API_SCOPE: &str = "user-read-playback-state user-modify-playback-state user-library-modify";
 
 pub struct SpotifyAuthClient {
     token: Token,
