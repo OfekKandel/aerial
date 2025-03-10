@@ -202,12 +202,67 @@ fn savetrack_body(args: &SaveTracks) -> SaveTrackBody {
     SaveTrackBody { ids: args.ids.clone() }
 }
 
+pub struct GetTopTracks {
+    pub time_range: SpotifyTimeRange,
+}
+impl_endpoint!(GetTopTracks, Method::GET, "me/top/tracks" => get_top_tracks_params, TopTracksResponse);
+fn get_top_tracks_params(args: &GetTopTracks) -> HashMap<String, String> {
+    [("time_range".into(), args.time_range.to_string())].into()
+}
+
+#[derive(clap::ValueEnum, Default, Clone)]
+pub enum SpotifyTimeRange {
+    Short, // ~4 Weeks
+    #[default]
+    Medium, // ~6 Months
+    Long,  // ~1 year
+}
+
+impl ToString for SpotifyTimeRange {
+    fn to_string(&self) -> String {
+        match self {
+            SpotifyTimeRange::Short => "short_term",
+            SpotifyTimeRange::Medium => "medium_term",
+            SpotifyTimeRange::Long => "long_term",
+        }.into()
+    }
+}
+
+#[derive(Deserialize)]
+pub struct TopTracksResponse {
+    pub items: Vec<SpotifyTrack>,
+    pub total: u32,
+    pub limit: u32,
+    pub offset: u32,
+    pub href: String,
+    // TODO: Implement option to actually use this
+    pub previous: Option<String>,
+    pub next: Option<String>,
+}
+
 pub struct GetCurrentTrack;
 impl_endpoint!(GetCurrentTrack, Method::GET, "me/player/currently-playing", CurrentTrack);
 
 #[derive(Deserialize)]
 pub struct CurrentTrack {
     pub item: Option<SpotifyTrack>,
+    pub context: Option<SpotifyContext>,
+}
+
+impl Display for CurrentTrack {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let track_info = match &self.item {
+            Some(track) => format!("{}", track),
+            None => "No track information available".to_string(),
+        };
+
+        let context_info = match &self.context {
+            Some(context) => format!("CONTEXT:\n{}", context),
+            None => "No context information available".to_string(),
+        };
+
+        write!(f, "{}\n\n{}", track_info, context_info)
+    }
 }
 
 // Other types -------------------------------------------------
@@ -292,6 +347,27 @@ impl Display for SpotifyTrack {
             format!("Album: {} (ID = {})", self.album.name, self.album.id),
             format!("Artist(s): {}", artist_names.join(", ")),
             format!("ID: {}", self.id),
+        ];
+        write!(f, "{}", lines.join("\n"))
+    }
+}
+
+#[derive(Deserialize)]
+pub struct SpotifyContext {
+    pub uri: String,
+    pub href: String,
+    pub external_urls: HashMap<String, String>,
+    #[serde(alias = "type")]
+    pub context_type: String,
+}
+
+impl Display for SpotifyContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let lines = [
+            format!("URI: {}", self.uri),
+            format!("Href: {}", self.href),
+            format!("External URLs: {:?}", self.external_urls),
+            format!("Context Type: {}", self.context_type),
         ];
         write!(f, "{}", lines.join("\n"))
     }

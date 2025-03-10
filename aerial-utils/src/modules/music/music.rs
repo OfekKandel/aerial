@@ -1,6 +1,6 @@
 use super::{
     spotify::{
-        spotify_api_spec::{ShuffleState, SpotifySearchType},
+        spotify_api_spec::{ShuffleState, SpotifySearchType, SpotifyTimeRange},
         spotify_client::{SpotifyClient, SpotifyError},
     },
     AuthError, MusicClient, SpotifyAuthClient,
@@ -39,7 +39,7 @@ pub enum MusicCommands {
         query: String,
         /// The type of results to be searched for
         #[clap(short = 't', long, default_value_t, value_enum)]
-        search_type: SpotifySearchType
+        search_type: SpotifySearchType,
     },
     /// Sets the shuffle state to the given parameter
     SetShuffle {
@@ -50,7 +50,12 @@ pub enum MusicCommands {
     Save {
         /// The ids of the tracks to save
         #[arg(num_args = 1..)]
-        ids: Vec<String>
+        ids: Vec<String>,
+    },
+    /// The user's top tracks
+    TopTracks {
+        #[clap(short = 't', long, default_value_t, value_enum)]
+        time_range: SpotifyTimeRange,
     },
     /// Print information about the current track
     CurrTrack,
@@ -111,6 +116,7 @@ impl Module for Music {
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
             MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
             MusicCommands::Save { ids } => Self::generate_client(spotify_config, cache)?.save_tracks(ids),
+            MusicCommands::TopTracks { time_range } => Self::generate_client(spotify_config, cache)?.get_top_tracks(time_range),
             MusicCommands::Search { query, search_type } => Self::generate_client(&spotify_config, cache)?.search(query.clone(), search_type),
             MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
         }
