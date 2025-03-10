@@ -1,4 +1,4 @@
-use super::spotify::spotify_api_spec::{ShuffleState, SpotifySearchType};
+use super::spotify::spotify_api_spec::{ShuffleState, SpotifySearchType, SpotifyTimeRange};
 use std::error::Error;
 
 pub trait MusicClient {
@@ -13,5 +13,6 @@ pub trait MusicClient {
     fn set_shuffle_state(&self, state: &ShuffleState) -> Result<(), Self::Error>;
     fn search(&self, query: String, search_type: SpotifySearchType) -> Result<(), Self::Error>;
     fn save_tracks(&self, ids: Vec<String>) -> Result<(), Self::Error>;
+    fn get_top_tracks(&self, time_range: SpotifyTimeRange) -> Result<(), Self::Error>;
     fn print_current_track(&self) -> Result<(), Self::Error>;
 }

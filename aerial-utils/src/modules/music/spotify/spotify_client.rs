@@ -1,8 +1,7 @@
-use super::spotify_api_handler::SpotifyApiHandler;
-use super::spotify_api_spec::{
+use super::{spotify_api_handler::SpotifyApiHandler, spotify_api_spec::{
     GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, SaveTracks, Search,
-    SetShuffle, ShuffleState, SpotifySearchType,
-};
+    SetShuffle, ShuffleState, SpotifySearchType, SpotifyTimeRange, GetTopTracks
+}};
 use super::spotify_auth::{AuthError, InitialAuthError};
 use crate::modules::music::spotify::spotify_api_spec::spotify_search_results_to_string;
 use crate::modules::music::MusicClient;
@@ -104,20 +103,26 @@ impl MusicClient for SpotifyClient {
     }
 
     fn save_tracks(&self, ids: Vec<String>) -> Result<(), Self::Error> {
-        println!("Ids: {}", serde_json::to_string(&ids).unwrap());
         self.api_handler
             .make_request(&SaveTracks { ids })
             .map_err(SpotifyError::ApiRequestError)?;
         Ok(())
     }
 
+
+    fn get_top_tracks(&self, time_range: SpotifyTimeRange) -> Result<(), Self::Error> {
+        let top_tracks = self.api_handler
+            .make_request(&GetTopTracks { time_range })
+            .map_err(SpotifyError::ApiRequestError)?;
+        println!("{}", top_tracks.items.iter().map(|track| track.to_string()).collect::<Vec<String>>().join("\n\n"));
+        Ok(())
+    }
+
     fn print_current_track(&self) -> Result<(), Self::Error> {
         self.verify_active_device()?;
         let curr_track = self.api_handler.make_request(&GetCurrentTrack).map_err(SpotifyError::ApiRequestError)?;
-        match curr_track.item {
-            Some(track) => Ok(println!("{}", track)),
-            None => Ok(println!("There's no track currently playing")),
-        }
+        println!("{}", curr_track);
+        Ok(())
     }
 }
 
