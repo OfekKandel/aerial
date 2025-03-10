@@ -48,8 +48,9 @@ pub enum MusicCommands {
     },
     /// Add a track to the user's 'Liked Songs' playlist
     Save {
-        /// The id of the track to save
-        id: String
+        /// The ids of the tracks to save
+        #[arg(num_args = 1..)]
+        ids: Vec<String>
     },
     /// Print information about the current track
     CurrTrack,
@@ -109,7 +110,7 @@ impl Module for Music {
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
             MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
-            MusicCommands::Save { id } => Self::generate_client(spotify_config, cache)?.save_track(id),
+            MusicCommands::Save { ids } => Self::generate_client(spotify_config, cache)?.save_tracks(ids),
             MusicCommands::Search { query, search_type } => Self::generate_client(&spotify_config, cache)?.search(query.clone(), search_type),
             MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
         }

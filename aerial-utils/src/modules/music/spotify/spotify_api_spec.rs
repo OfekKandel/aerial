@@ -190,20 +190,17 @@ pub fn spotify_search_results_to_string<T: Display>(results: Option<Vec<T>>) -> 
 }
 
 pub struct SaveTracks {
-    pub ids: Vec<String>
+    pub ids: Vec<String>,
 }
 impl_endpoint!(SaveTracks, Method::PUT, "me/tracks", savetrack_body => SaveTrackBody, NoResponse);
 #[derive(Serialize)]
 pub struct SaveTrackBody {
-    pub ids: Vec<String>
+    pub ids: Vec<String>,
 }
 
 fn savetrack_body(args: &SaveTracks) -> SaveTrackBody {
-    SaveTrackBody {
-        ids: args.ids.clone(),
-    }
+    SaveTrackBody { ids: args.ids.clone() }
 }
-
 
 pub struct GetCurrentTrack;
 impl_endpoint!(GetCurrentTrack, Method::GET, "me/player/currently-playing", CurrentTrack);
