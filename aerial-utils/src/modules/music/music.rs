@@ -46,6 +46,11 @@ pub enum MusicCommands {
         /// Weather to turn shuffle on or off
         state: ShuffleState,
     },
+    /// Add a track to the user's 'Liked Songs' playlist
+    Save {
+        /// The id of the track to save
+        id: String
+    },
     /// Print information about the current track
     CurrTrack,
     /// Initialize authentication to Spotify
@@ -104,6 +109,7 @@ impl Module for Music {
             MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
             MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
+            MusicCommands::Save { id } => Self::generate_client(spotify_config, cache)?.save_track(id),
             MusicCommands::Search { query, search_type } => Self::generate_client(&spotify_config, cache)?.search(query.clone(), search_type),
             MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
         }

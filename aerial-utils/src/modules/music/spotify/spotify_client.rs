@@ -1,7 +1,7 @@
 use super::spotify_api_handler::SpotifyApiHandler;
 use super::spotify_api_spec::{
-    GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, Search, SetShuffle,
-    ShuffleState, SpotifySearchType,
+    GetCurrentTrack, GetPlaybackState, GotoNextTrack, GotoPrevTrack, Pause, Play, PlaybackState, PlayingState, Resume, SaveTracks, Search,
+    SetShuffle, ShuffleState, SpotifySearchType,
 };
 use super::spotify_auth::{AuthError, InitialAuthError};
 use crate::modules::music::spotify::spotify_api_spec::spotify_search_results_to_string;
@@ -100,6 +100,13 @@ impl MusicClient for SpotifyClient {
                 SpotifySearchType::Playlist => spotify_search_results_to_string(search_results.playlists.map(|i| i.items)),
             }
         );
+        Ok(())
+    }
+
+    fn save_track(&self, id: String) -> Result<(), Self::Error> {
+        self.api_handler
+            .make_request(&SaveTracks { ids: vec![id] })
+            .map_err(SpotifyError::ApiRequestError)?;
         Ok(())
     }
 
