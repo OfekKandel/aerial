@@ -103,9 +103,10 @@ impl MusicClient for SpotifyClient {
         Ok(())
     }
 
-    fn save_track(&self, id: String) -> Result<(), Self::Error> {
+    fn save_tracks(&self, ids: Vec<String>) -> Result<(), Self::Error> {
+        println!("Ids: {}", serde_json::to_string(&ids).unwrap());
         self.api_handler
-            .make_request(&SaveTracks { ids: vec![id] })
+            .make_request(&SaveTracks { ids })
             .map_err(SpotifyError::ApiRequestError)?;
         Ok(())
     }
