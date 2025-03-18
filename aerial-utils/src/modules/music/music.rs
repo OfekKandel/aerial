@@ -101,24 +101,28 @@ impl Module for Music {
     fn run(args: Self::Args, config: &Config, cache: &mut Cache) -> Result<(), Self::Error> {
         let spotify_config = config.modules.spotify.as_ref().ok_or(MusicError::MissingConfig)?;
 
-        // TODO: Remove all of these generate_client calls
+        if let MusicCommands::Auth = args.command {
+            return SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
+                .map_err(SpotifyError::FailedInitialAuth)
+                .map_err(MusicError::FailedAction);
+        }
+
+        let music_client = Self::generate_client(spotify_config, cache)?;
+
         match args.command {
-            MusicCommands::Auth => {
-                SpotifyAuthClient::add_auth_to_cache(cache, &spotify_config.client_id.as_str(), &spotify_config.client_secret.as_str())
-                    .map_err(SpotifyError::FailedInitialAuth)
-            }
-            MusicCommands::Toggle => Self::generate_client(spotify_config, cache)?.toggle(),
-            MusicCommands::Pause => Self::generate_client(spotify_config, cache)?.pause(),
-            MusicCommands::Resume => Self::generate_client(spotify_config, cache)?.resume(),
-            MusicCommands::Play(args) => Self::generate_client(spotify_config, cache)?.play(args.track, args.context),
-            MusicCommands::Next => Self::generate_client(spotify_config, cache)?.goto_next_track(),
-            MusicCommands::Prev => Self::generate_client(spotify_config, cache)?.goto_prev_track(),
+            MusicCommands::Toggle => music_client.toggle(),
+            MusicCommands::Pause => music_client.pause(),
+            MusicCommands::Resume => music_client.resume(),
+            MusicCommands::Play(args) => music_client.play(args.track, args.context),
+            MusicCommands::Next => music_client.goto_next_track(),
+            MusicCommands::Prev => music_client.goto_prev_track(),
             MusicCommands::Unauth => Ok(SpotifyAuthClient::remove_auth_from_cache(cache)),
-            MusicCommands::SetShuffle { state } => Self::generate_client(&spotify_config, cache)?.set_shuffle_state(&state),
-            MusicCommands::Save { ids } => Self::generate_client(spotify_config, cache)?.save_tracks(ids),
-            MusicCommands::TopTracks { time_range } => Self::generate_client(spotify_config, cache)?.get_top_tracks(time_range),
-            MusicCommands::Search { query, search_type } => Self::generate_client(&spotify_config, cache)?.search(query.clone(), search_type),
-            MusicCommands::CurrTrack => Self::generate_client(&spotify_config, cache)?.print_current_track(),
+            MusicCommands::SetShuffle { state } => music_client.set_shuffle_state(&state),
+            MusicCommands::Save { ids } => music_client.save_tracks(ids),
+            MusicCommands::TopTracks { time_range } => music_client.get_top_tracks(time_range),
+            MusicCommands::Search { query, search_type } => music_client.search(query.clone(), search_type),
+            MusicCommands::CurrTrack => music_client.print_current_track(),
+            _ => unreachable!(),
         }
         .map_err(MusicError::FailedAction)
     }
