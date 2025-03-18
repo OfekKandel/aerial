@@ -42,7 +42,8 @@ fn run_module(module: Modules) -> Result<(), Box<dyn std::error::Error>> {
 fn main() {
     let args = AerialUtilsArgs::parse();
     match run_module(args.module) {
-        Ok(_) => println!("Command performed succesfully"),
+        // Ok(_) => println!("Command performed succesfully"),
+        Ok(_) => (),
         Err(err) => eprintln!("MODULE FAILED: {}", err),
     }
 }
