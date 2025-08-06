@@ -4,7 +4,7 @@ import subprocess
 from openai import OpenAI
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
-MODEL = "gpt-4"
+MODEL = "gpt-4o"
 
 
 # NOTE: The config is in config_ai.toml because aerial-utils uses config.toml
