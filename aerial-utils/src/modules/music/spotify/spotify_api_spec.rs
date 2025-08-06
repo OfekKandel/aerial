@@ -1,14 +1,10 @@
 use crate::impl_endpoint;
-use crate::utils::api_spec::NoBody;
-use crate::utils::api_spec::NoResponse;
-use crate::utils::api_spec::OptionalResponse;
+use crate::utils::api_spec::{NoBody, NoResponse, OptionalResponse};
 use crate::utils::ApiRequest;
 use crate::utils::ApiRequestSpec;
 use clap::ValueEnum;
 use reqwest::Method;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::u8;
