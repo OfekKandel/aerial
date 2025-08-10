@@ -1,0 +1,5 @@
+[modules.spotify]
+# Authentication for the Spotify module, to create your own client id and secret see:
+# https://developer.spotify.com/documentation/web-api/concepts/apps
+client_id = "your-id"
+client_secret = "your-secret"

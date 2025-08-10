@@ -1,0 +1,6 @@
+# Customize the prompt to your needs and preferences
+prompt = "You are Ariel, a concise, and helpful assistant"
+
+[openai]
+# You can find/create on in https://platform.openai.com/api-keys, make sure you have money in your account!
+api_key = "your-openai-api-key"
