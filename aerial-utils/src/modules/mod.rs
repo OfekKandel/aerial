@@ -1,5 +1,6 @@
 mod module;
 pub mod music;
+pub mod file_system;
 mod spec_gen;
 
 pub use module::*;

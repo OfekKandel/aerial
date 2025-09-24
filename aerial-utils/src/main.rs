@@ -2,9 +2,17 @@ mod modules;
 mod utils;
 
 use clap::{Parser, Subcommand};
-use modules::{music::{MusicArgs, MusicError}, print_subcommand_specs, Module, Music};
+use modules::{
+    file_system::{FileSystem, FileSystemArgs, FileSystemError},
+    music::{Music, MusicArgs, MusicError},
+    print_subcommand_specs, Module,
+};
 use thiserror::Error;
-use utils::{cache::{Cache, CacheError}, config::ConfigError, Config};
+use utils::{
+    cache::{Cache, CacheError},
+    config::ConfigError,
+    Config,
+};
 
 const CONFIG_PATH: &str = "./config.toml";
 
@@ -19,20 +27,23 @@ pub struct AerialUtilsArgs {
 enum Modules {
     /// The music module
     Music(MusicArgs),
+    /// The file system module
+    FileSystem(FileSystemArgs),
     /// Print ChatGPT command specifications
     CommandSpecs,
 }
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("Cache error: {0}")]
+    #[error("Cache error:\n{0}")]
     CacheError(CacheError),
-    #[error("Config error: {0}")]
+    #[error("Config error:\n{0}")]
     ConfigError(ConfigError),
-    #[error("Music module error: {0}")]
+    #[error("Music module error:\n{0}")]
     MusicError(MusicError),
+    #[error("File system module error:\n{0}")]
+    FileSystemError(FileSystemError),
 }
-
 
 fn run_module(module: Modules) -> Result<(), AppError> {
     let mut cache = Cache::from_file("cache.toml").map_err(AppError::CacheError)?;
@@ -43,6 +54,7 @@ fn run_module(module: Modules) -> Result<(), AppError> {
             print_subcommand_specs();
             Ok(())
         }
+        Modules::FileSystem(args) => FileSystem::run(args, &config, &mut cache).map_err(AppError::FileSystemError),
     };
     // NOTE: Cache won't be changed if the operation failed, might be good because
     // running the same command twice shouldn't get a different result
@@ -55,6 +67,6 @@ fn main() {
     match run_module(args.module) {
         // Ok(_) => println!("Command performed succesfully"),
         Ok(_) => (),
-        Err(err) => eprintln!("MODULE FAILED: {}", err),
+        Err(err) => eprintln!("MODULE FAILED:\n{}", err),
     }
 }
