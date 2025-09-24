@@ -14,11 +14,13 @@ pub struct FileSystemArgs {
 #[derive(Subcommand)]
 pub enum FileSystemCommands {
     /// List all the files in a directory
+    #[command(visible_alias = "ls")]
     ListDirectoryContents {
         /// The path to the directory
         directorh_path: PathBuf,
     },
     /// List all the files in a directory
+    #[command(visible_alias = "cat")]
     ReadFilePlaintext {
         /// The path to the file
         file_path: PathBuf,

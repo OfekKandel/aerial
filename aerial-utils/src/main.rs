@@ -28,6 +28,7 @@ enum Modules {
     /// The music module
     Music(MusicArgs),
     /// The file system module
+    #[command(visible_alias = "fs")]
     FileSystem(FileSystemArgs),
     /// Print ChatGPT command specifications
     CommandSpecs,
