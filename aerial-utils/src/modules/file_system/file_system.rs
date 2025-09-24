@@ -1,9 +1,10 @@
-use std::{fmt::Display, fs, io, path::PathBuf};
+use std::{fmt::Display, io, path::PathBuf};
 
 use clap::{Args, Subcommand};
 use thiserror::Error;
 
 use crate::modules::Module;
+use super::basic_operations::*;
 
 #[derive(Args)]
 pub struct FileSystemArgs {
@@ -51,20 +52,4 @@ impl Display for FileSystem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "File System")
     }
-}
-
-// TODO: Move to another file
-fn list_dir(directorh_path: PathBuf) -> Result<(), io::Error> {
-    for entry in fs::read_dir(directorh_path)? {
-        let entry = entry?;
-        let path = entry.path();
-        println!("{}", path.display());
-    }
-    Ok(())
-}
-
-fn read_file_plaintext(file_path: PathBuf) -> Result<(), io::Error> {
-    let s = fs::read_to_string(&file_path)?;
-    print!("{}", s);
-    Ok(())
 }

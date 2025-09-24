@@ -2,16 +2,16 @@ mod modules;
 mod utils;
 
 use clap::{Parser, Subcommand};
+use thiserror::Error;
+
 use modules::{
     file_system::{FileSystem, FileSystemArgs, FileSystemError},
     music::{Music, MusicArgs, MusicError},
     print_subcommand_specs, Module,
 };
-use thiserror::Error;
 use utils::{
     cache::{Cache, CacheError},
-    config::ConfigError,
-    Config,
+    config::{Config, ConfigError},
 };
 
 const CONFIG_PATH: &str = "./config.toml";
