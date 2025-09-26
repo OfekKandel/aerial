@@ -37,21 +37,21 @@ impl AuthClient for SpotifyAuthClient {
 pub enum AuthError {
     #[error("You are unauthenticated, run `music auth` to to authenticate")]
     NeedsInitialAuth,
-    #[error("Failed to refresh authentication token: {0}")]
+    #[error("Failed to refresh authentication token:\n{0}")]
     FailedTokenRefresh(ResponseError),
 }
 
 #[derive(Debug, Error)]
 pub enum InitialAuthError {
-    #[error("Failed to create a valid callback URL, this is usually a problem in the code: {0}")]
+    #[error("Failed to create a valid callback URL, this is usually a problem in the code:\n{0}")]
     FailedCallbackUrlCreation(url::ParseError),
-    #[error("Failed to open the Spotify authorization window: {0}")]
+    #[error("Failed to open the Spotify authorization window:\n{0}")]
     FailedToOpenAuthWindow(opener::OpenError),
-    #[error("Failed to read the the redirect: {0}")]
+    #[error("Failed to read the the redirect:\n{0}")]
     FailedToReadRedirect(TcpServerError),
-    #[error("Code param not found in redirect, given params: {0:?}")]
+    #[error("Code param not found in redirect, given params:\n{0:?}")]
     CodeNotFoundInRedirect(HashMap<String, String>),
-    #[error("Failed to get a token: {0}")]
+    #[error("Failed to get a token:\n{0}")]
     FailedToGetToken(ResponseError),
 }
 

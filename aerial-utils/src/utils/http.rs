@@ -4,15 +4,15 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ResponseError {
-    #[error("Got an invalid resposne: {0}")]
+    #[error("Got an invalid resposne:\n{0}")]
     InvalidResposne(ResponseValidationError),
-    #[error("Couldn't extract data from response: {0}")]
+    #[error("Couldn't extract data from response:\n{0}")]
     InvalidExtraction(ResponseExtractionError),
 }
 
 #[derive(Error, Debug)]
 pub enum ResponseValidationError {
-    #[error("Failed to send HTTP request: {0}")]
+    #[error("Failed to send HTTP request:\n{0}")]
     FailedToSendRequest(reqwest::Error),
     #[error("Got a bad status code {0}, body:\n{1}")]
     BadStatusCode(StatusCode, String),

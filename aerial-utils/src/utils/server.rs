@@ -8,11 +8,11 @@ use std::net::TcpStream;
 
 #[derive(Debug, thiserror::Error)]
 pub enum TcpServerError {
-    #[error("Failed to create TCP listener: {0}")]
+    #[error("Failed to create TCP listener:\n{0}")]
     FailedToCreateTcpListener(io::Error),
-    #[error("Failed to get a stream for a request: {0}")]
+    #[error("Failed to get a stream for a request:\n{0}")]
     FailedToGetStream(io::Error),
-    #[error("Failed parse the request made to the server: {0}")]
+    #[error("Failed parse the request made to the server:\n{0}")]
     FailedToParseRequest(RequestFromStringError),
     #[error("Failed to write to tab buffer")]
     FailedBufferWrite(io::Error),
@@ -28,9 +28,9 @@ pub struct Request {
 pub enum RequestFromStringError {
     #[error("The given string is empty")]
     StringIsEmpty,
-    #[error("The first line could not be parsed: {0}")]
+    #[error("The first line could not be parsed:\n{0}")]
     InvalidFirstLine(String),
-    #[error("The path the request was submitted to couldn't be parsed: {0}")]
+    #[error("The path the request was submitted to couldn't be parsed:\n{0}")]
     InvalidPath(String),
 }
 

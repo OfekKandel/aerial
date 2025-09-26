@@ -80,9 +80,9 @@ pub struct PlayArgs {
 pub enum MusicError {
     #[error("No configuration for Spotify found in the config file")]
     MissingConfig,
-    #[error("Failed to perform action: {0}")]
+    #[error("Failed to perform action:\n{0}")]
     FailedAction(SpotifyError),
-    #[error("Failed to authenticate to API: {0}")]
+    #[error("Failed to authenticate to API:\n{0}")]
     FailedAuth(AuthError),
 }
 
