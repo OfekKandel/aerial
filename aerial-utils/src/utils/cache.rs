@@ -12,11 +12,11 @@ pub struct Cache {
 
 #[derive(thiserror::Error, Debug)]
 pub enum CacheError {
-    #[error("Invalid cache file: {0}")]
+    #[error("Invalid cache file:\n{0}")]
     FailedToParseToml(de::Error),
-    #[error("Failed to open file to write to, path: {0}")]
+    #[error("Failed to open file to write to, path:\n{0}")]
     FailedToWriteFile(std::io::Error),
-    #[error("Failed to convert cache to string for writing: {0}")]
+    #[error("Failed to convert cache to string for writing:\n{0}")]
     FailedToPrintCache(toml::ser::Error),
 }
 

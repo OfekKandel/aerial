@@ -10,7 +10,7 @@ pub struct Config {
 
 #[derive(thiserror::Error, Debug)]
 pub enum ConfigError {
-    #[error("Failed to parse config file: {0}")]
+    #[error("Failed to parse config file:\n{0}")]
     FailedToParseToml(de::Error),
 }
 

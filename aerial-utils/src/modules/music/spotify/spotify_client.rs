@@ -16,11 +16,11 @@ pub struct SpotifyClient {
 pub enum SpotifyError {
     #[error("There is no actively playing Spotify device")]
     NoActiveDevice,
-    #[error("Action can't be performed when music is {0}")]
+    #[error("Action can't be performed when music is\n{0}")]
     UnwantedPlayingState(PlayingState),
-    #[error("Theres an error in the API request: {0}")]
+    #[error("Theres an error in the API request:\n{0}")]
     ApiRequestError(ResponseError),
-    #[error("Failed to initial authentication: {0}")]
+    #[error("Failed to initial authentication:\n{0}")]
     FailedInitialAuth(InitialAuthError),
 }
 
