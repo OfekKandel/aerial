@@ -12,7 +12,7 @@ pub struct Token {
 
 impl Token {
     pub fn as_auth(&self) -> String {
-        format!("{}  {}", self.token_type, self.access_token)
+        format!("{} {}", self.token_type, self.access_token)
     }
 
     pub fn is_valid(&self) -> bool {

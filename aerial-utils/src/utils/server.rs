@@ -59,7 +59,7 @@ impl TryFrom<Vec<String>> for Request {
 pub fn read_localhost_request(port: u32) -> Result<Request, TcpServerError> {
     // TODO: Actually support path
     // TODO: Actually handle overtime
-    let listener = TcpListener::bind(format!("localhost:{}", port)).map_err(TcpServerError::FailedToCreateTcpListener)?;
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).map_err(TcpServerError::FailedToCreateTcpListener)?;
     let (stream, _) = listener.accept().map_err(TcpServerError::FailedToGetStream)?;
     handle_requset_stream(stream)
 }

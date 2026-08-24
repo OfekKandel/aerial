@@ -21,6 +21,7 @@ use url::Url;
 
 const AUTH_ENDPOINT: &str = "https://accounts.spotify.com";
 const REDIRECT_PORT: u32 = 8888;
+const REDIRECT_HOST: &str = "127.0.0.1";
 const API_SCOPE: &str = "user-read-playback-state user-modify-playback-state user-library-modify user-top-read";
 
 pub struct SpotifyAuthClient {
@@ -103,7 +104,7 @@ impl SpotifyAuthClient {
     }
 
     fn open_auth_window(client_id: &str) -> Result<(), InitialAuthError> {
-        let redirect_uri = format!("http://localhost:{}/callback", REDIRECT_PORT);
+        let redirect_uri = format!("http://{}:{}/callback", REDIRECT_HOST, REDIRECT_PORT);
         let uri = Url::parse_with_params(
             format!("{}/{}", AUTH_ENDPOINT, "authorize").as_str(),
             &[
@@ -129,7 +130,7 @@ impl SpotifyAuthClient {
 
     fn get_token(code: String, client_id: &str, client_secret: &str) -> Result<Token, ResponseError> {
         let encoded_auth = base64_engine.encode(format!("{}:{}", client_id, client_secret));
-        let redirect_uri = format!("http://localhost:{}/callback", REDIRECT_PORT);
+        let redirect_uri = format!("http://{}:{}/callback", REDIRECT_HOST, REDIRECT_PORT);
         let response = reqwest::blocking::Client::new()
             .post(format!("{}/api/token", AUTH_ENDPOINT))
             .header(AUTHORIZATION, format!("Basic {}", encoded_auth))
