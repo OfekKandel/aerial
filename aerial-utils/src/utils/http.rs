@@ -20,8 +20,13 @@ pub enum ResponseValidationError {
 
 #[derive(Error, Debug)]
 pub enum ResponseExtractionError {
-    #[error("Failed to extract data from response JSON:\nERROR: {0}\nJSON: {0}")]
-    FailedToExtractFromJSON(serde_json::Error, String),
+    #[error("Failed to extract data from response JSON:\nSTATUS: {status}\nHEADERS:\n{headers}\nERROR: {error}\nBODY: {body}")]
+    FailedToExtractFromJSON {
+        status: StatusCode,
+        headers: String,
+        error: serde_json::Error,
+        body: String,
+    },
 }
 
 pub trait ValidateResponseExt {
@@ -49,11 +54,33 @@ pub trait ExtractFromResposneExt {
 
 impl ExtractFromResposneExt for Response {
     fn extract<T: DeserializeOwned>(self) -> Result<T, ResponseExtractionError> {
-        let text = match self.text() {
-            Ok(text) if !text.is_empty() => text,
-            _ => "{}".into(),
+        let status = self.status();
+        let headers = self
+            .headers()
+            .iter()
+            .map(|(name, value)| format!("  {}: {}", name, value.to_str().unwrap_or("<non-utf8>")))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let text = self.text().unwrap_or_default();
+        let body = text.trim();
+
+        let primary_err = if body.is_empty() {
+            None
+        } else {
+            match serde_json::from_str::<T>(body) {
+                Ok(value) => return Ok(value),
+                Err(err) => Some(err),
+            }
         };
-        serde_json::from_str(text.clone().as_str()).map_err(|err| ResponseExtractionError::FailedToExtractFromJSON(err, text.clone()))
+
+        // If T=NoResponse then this is fine, meaning the error gets ignored, else we return the error
+        serde_json::from_str::<T>("{}").map_err(|fallback_err| ResponseExtractionError::FailedToExtractFromJSON {
+            status,
+            headers,
+            error: primary_err.unwrap_or(fallback_err),
+            body: text,
+        })
     }
 }
 
